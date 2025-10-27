@@ -1,0 +1,50 @@
+# Create .gitignore file
+nano .gitignore
+```
+
+**Content:**
+```
+# Database files (don't upload user data)
+*.db
+backup_db_*.db
+
+# Config files with user data
+user_config.txt
+config.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+error_log.txt
+*.log
+
+# Excel exports (user data)
+*.xlsx
+inventory_export_*.xlsx
+inventory_report_*.xlsx
+
+# Charts (generated files)
+stock_chart_*.png
+
+# Backup marker
+.installed
