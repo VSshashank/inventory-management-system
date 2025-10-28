@@ -1,0 +1,21 @@
+# Biodegradable Bags Inventory Management System
+# Python Package Requirements
+
+# Core dependencies
+rich>=13.0.0
+pandas>=1.3.0
+matplotlib>=3.5.0
+openpyxl>=3.0.0
+
+# Additional recommended packages
+# (already included with Python 3.7+)
+# sqlite3 - Database (built-in)
+# datetime - Date handling (built-in)
+# json - Configuration (built-in)
+# os - File operations (built-in)
+# shutil - Backup operations (built-in)
+
+# Optional: For development and testing
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0

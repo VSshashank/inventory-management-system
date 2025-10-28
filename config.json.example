@@ -1,0 +1,15 @@
+{
+    "low_stock_threshold": 10,
+    "backups_to_keep": 30,
+    "default_currency": "₹",
+    "date_format": "%Y-%m-%d",
+    "enable_charts": true,
+    "enable_profit_tracking": true,
+    
+    "_comment_threshold": "Low stock threshold in kg - system will warn when stock falls below this",
+    "_comment_backups": "Number of database backups to keep (older ones auto-deleted)",
+    "_comment_currency": "Currency symbol for display (₹, $, €, £, etc.)",
+    "_comment_date": "Date format for reports - use Python strftime format codes",
+    "_comment_charts": "Enable/disable chart generation feature",
+    "_comment_profit": "Enable/disable cost and profit tracking features"
+}
