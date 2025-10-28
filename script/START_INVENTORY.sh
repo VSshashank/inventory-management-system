@@ -92,7 +92,7 @@ echo -e "${CYAN}================================================${NC}"
 echo ""
 sleep 1
 
-python3 complete_inventory_system.py
+python3 inventory_tracker.py
 
 # After program exits
 EXIT_CODE=$?
