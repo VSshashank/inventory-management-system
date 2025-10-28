@@ -97,7 +97,7 @@ echo [36m================================================[0m
 echo.
 timeout /t 1 /nobreak >nul
 
-python complete_inventory_system.py
+python inventory_tracker.py
 
 REM After program exits
 set EXIT_CODE=%ERRORLEVEL%
