@@ -1,0 +1,101 @@
+# ============================================
+# Inventory Management System — .gitignore
+# Covers: Python CLI (legacy), Node.js/TypeScript backend, Angular frontend
+# ============================================
+
+# ---------- Node.js / TypeScript ----------
+node_modules/
+dist/
+*.tsbuildinfo
+
+# ---------- Environment & Secrets ----------
+.env
+.env.*
+!.env.example
+
+# ---------- Logs ----------
+*.log
+error_log.txt
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------- Database ----------
+*.db
+*.sqlite
+*.sqlite3
+backup_db_*.db
+
+# ---------- Prisma (local dev DBs, not migrations) ----------
+backend/prisma/*.db
+
+# ---------- Angular ----------
+.angular/
+frontend/dist/
+frontend/.angular/
+
+# ---------- Generated Reports / Charts ----------
+inventory_report_*.xlsx
+*.xls
+stock_chart_*.png
+
+# ---------- Python (legacy CLI) ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ---------- Testing ----------
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+coverage/
+
+# ---------- IDE ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Misc ----------
+*.bak
+*.backup
+*.tmp
+temp/
+tmp/
+.ipynb_checkpoints
+
+# ---------- Configuration (legacy, user-specific) ----------
+config.json
+user_config.txt

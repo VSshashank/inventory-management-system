@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: Inventory_ci_2026!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Inventory_ci_2026!' -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: "sqlserver://localhost:1433;database=InventoryCi;user=sa;password=Inventory_ci_2026!;encrypt=true;trustServerCertificate=true;"
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+      JWT_MFA_SECRET: ci-mfa-secret
+      FRONTEND_ORIGIN: http://localhost:4200
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Backend install
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend audit
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Backend migrate
+        working-directory: backend
+        run: npx prisma migrate deploy
+
+      - name: Backend seed
+        working-directory: backend
+        run: npm run db:seed
+
+      - name: Backend test
+        working-directory: backend
+        run: npm test
+
+      - name: Backend build
+        working-directory: backend
+        run: npm run build
+
+      - name: Frontend install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend audit
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Frontend test
+        working-directory: frontend
+        run: npm test -- --watch=false
+
+      - name: Frontend build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Docker build
+        run: docker build -t inventory-management-system .

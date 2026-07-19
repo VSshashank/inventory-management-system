@@ -1,310 +1,149 @@
-# 📦 Biodegradable Bags Inventory Management System
+# Inventory Management System
 
-A professional-grade inventory tracking system designed specifically for biodegradable bag businesses. Features complete transaction history, profit tracking, sales analytics, and beautiful reporting.
+A full-stack inventory management app rebuilt from a working Python CLI into a generalized production-style web application.
 
-![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Status](https://img.shields.io/badge/status-production--ready-brightgreen.svg)
+The original tool tracked biodegradable-bag stock in SQLite with terminal menus. This rebuild keeps the useful business workflows, then moves them into a layered app: Angular UI, Express + TypeScript API, Prisma, and SQL Server.
 
-## ✨ Key Features
+## What It Does
 
-### 📊 Core Functionality
-- **Real-time Stock Tracking**: Monitor inventory levels for all bag dimensions
-- **Transaction History**: Complete audit trail of all stock movements
-- **Past Transaction Entry**: Add historical transactions with custom dates
-- **Bulk Entry Wizard**: Quickly import multiple past transactions
+- Tracks items across configurable categories and units of measure.
+- Records stock-in, sale, and adjustment transactions.
+- Prevents overselling on sales.
+- Supports backdated transaction entry for historical records.
+- Preserves undo as an audit-friendly transaction void instead of deleting history.
+- Shows current stock, low-stock status, recent activity, sales/profit, and stock velocity.
+- Exports a multi-sheet Excel report for stock, transaction history, and sales/profit.
+- Supports real user accounts with admin/staff roles, JWT sessions, refresh-token revocation, CSRF protection, and optional TOTP MFA.
+- Migrates historical data from the legacy `inventory.db` SQLite file.
 
-### 💰 Business Intelligence
-- **Profit Tracking**: Track costs and selling prices for profitability analysis
-- **Sales Reports**: Comprehensive sales analytics with date filtering
-- **Sales Velocity**: Forecast when stock will run out based on sales patterns
-- **Low Stock Alerts**: Automatic warnings when inventory runs low
+## Architecture
 
-### 📈 Reporting & Analytics
-- **Excel Export**: Professional multi-sheet reports with color coding
-- **Visual Charts**: Generate stock level bar charts
-- **Item History**: View complete transaction history per dimension
-- **Profit Analysis**: Calculate margins and profitability by product
-
-### 🛡️ Data Safety
-- **Automatic Backups**: Database backed up before every change
-- **Error Logging**: Comprehensive error tracking for debugging
-- **Undo Function**: Reverse the last transaction if needed
-- **Data Validation**: Prevents negative stock and invalid entries
-
-### 🎨 User Experience
-- **Beautiful Interface**: Rich terminal UI with colors and tables
-- **Autocomplete**: Dimension suggestions to prevent typos
-- **Smart Confirmations**: Preview changes before committing
-- **Guided Wizards**: Step-by-step assistance for complex tasks
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.7 or higher
-- pip (Python package manager)
-
-### Installation
-
-1. **Clone or Download**
-   ```bash
-   git clone https://github.com/yourusername/inventory-system.git
-   cd inventory-system
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Program**
-   ```bash
-   python complete_inventory_system.py
-   ```
-
-   Or use the startup scripts:
-   - **Windows**: Double-click `START_INVENTORY.bat`
-   - **Linux/Mac**: Run `./START_INVENTORY.sh`
-
-## 📖 Usage Guide
-
-### First Time Setup
-
-When you first run the program:
-1. Enter your name for record-keeping
-2. The system creates a new database automatically
-3. Start adding your inventory!
-
-### Daily Operations
-
-#### Adding New Stock (Today's Date)
-1. Select option **1** from main menu
-2. Enter bag dimension (e.g., `10x16`)
-3. Enter quantity received in kg
-4. Optionally enter cost per kg
-5. Confirm and save
-
-#### Recording a Sale (Today's Date)
-1. Select option **2** from main menu
-2. Choose dimension from existing stock
-3. Enter quantity sold in kg
-4. Optionally enter selling price per kg
-5. System prevents overselling automatically
-
-#### Adding Past Transactions
-1. Select option **3** for manual entry (one at a time)
-2. OR select option **4** for bulk entry wizard (multiple transactions)
-3. Choose transaction type (stock/sale/adjustment)
-4. Enter the historical date (YYYY-MM-DD format)
-5. Enter dimension and quantity
-6. Include pricing if needed
-7. Confirm and save
-
-### Reports & Analytics
-
-#### View Current Inventory
-- Shows all dimensions with current stock levels
-- Color-coded: Green (good), Yellow (low), Red (out of stock)
-- Total inventory summary
-
-#### Sales & Profit Reports
-- Filter by date range (last 7/30 days, this month/year, custom)
-- Sales by dimension with revenue
-- Profit analysis with margins
-- Sales velocity and stock forecasting
-
-#### Excel Export
-- Multi-sheet professional reports
-- Current stock with color coding
-- Complete transaction history
-- Sales and profit analysis
-- Formatted and ready for presentation
-
-## 🔧 Configuration
-
-Edit settings via the program (option **12**) or manually edit `config.json`:
-
-```json
-{
-    "low_stock_threshold": 10,
-    "backups_to_keep": 30,
-    "default_currency": "₹",
-    "date_format": "%Y-%m-%d",
-    "enable_charts": true,
-    "enable_profit_tracking": true
-}
+```mermaid
+graph LR
+  A[Angular SPA<br/>Material + Chart.js] -->|REST + JWT| B[Express API<br/>TypeScript]
+  B --> C[Prisma ORM]
+  C --> D[(SQL Server)]
+  B --> E[Excel Export]
+  B --> F[Auth + CSRF + MFA]
 ```
 
-### Configuration Options
+## Tech Stack
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `low_stock_threshold` | Alert level for low stock (kg) | 10 |
-| `backups_to_keep` | Number of backup files to retain | 30 |
-| `default_currency` | Currency symbol for reports | ₹ |
-| `date_format` | Date format for transactions | YYYY-MM-DD |
-| `enable_charts` | Generate visual charts | true |
-| `enable_profit_tracking` | Track costs and profits | true |
+- Backend: Node.js, Express, TypeScript, Zod, Prisma
+- Database: SQL Server
+- Frontend: Angular, Angular Material, Chart.js
+- Reports: ExcelJS
+- Security: Helmet, CORS allow-list, JWT access/refresh tokens, bcrypt, CSRF, optional TOTP MFA
+- Testing: Node test runner + Supertest, Angular/Vitest
+- Deployment: Docker, docker-compose, GitHub Actions scaffold
 
-## 📁 File Structure
+## Local Setup
 
-```
-inventory-management-system/
-├── complete_inventory_system.py    # Main program
-├── inventory.db                    # SQLite database (auto-created)
-├── config.json                     # Configuration file (auto-created)
-├── user_config.txt                 # User name (auto-created)
-├── error_log.txt                   # Error logs (auto-created)
-├── backup_db_*.db                  # Automatic backups
-├── stock_chart_*.png               # Generated charts
-├── inventory_report_*.xlsx         # Excel exports
-├── requirements.txt                # Python dependencies
-├── README.md                       # This file
-├── LICENSE                         # License information
-├── docs/
-│   ├── USER_GUIDE.md              # Detailed user guide
-│   └── INSTALLATION.md            # Installation instructions
-└── scripts/
-    ├── START_INVENTORY.sh         # Linux/Mac startup script
-    └── START_INVENTORY.bat        # Windows startup script
+Start SQL Server:
+
+```bash
+docker compose up sqlserver
 ```
 
-## 🐛 Troubleshooting
+Create `backend/.env` from `backend/.env.example`, then run:
 
-### Common Issues
+```bash
+cd backend
+npm install
+npx prisma migrate deploy
+npm run db:seed:demo
+npm run dev
+```
 
-**"ModuleNotFoundError: No module named 'rich'"**
-- Solution: Run `pip install -r requirements.txt`
+In a second terminal:
 
-**"Database is locked"**
-- Solution: Close other instances of the program
-- The database can only be accessed by one program at a time
+```bash
+cd frontend
+npm install
+npm start
+```
 
-**"Permission denied" when creating backups**
-- Solution: Run with appropriate permissions
-- Ensure write access to the program directory
+Open `http://localhost:4200`.
 
-**Charts not generating**
-- Solution: Install matplotlib: `pip install matplotlib`
-- Some systems may need additional graphics libraries
+Demo accounts after seeding:
 
-### Getting Help
+- Admin: `admin@example.com` / `AdminDemo!2026`
+- Staff: `staff@example.com` / `StaffDemo!2026`
 
-1. Check the detailed [User Guide](docs/USER_GUIDE.md)
-2. Review [Installation Guide](docs/INSTALLATION.md)
-3. Check `error_log.txt` for error details
-4. Create an issue on GitHub with error details
+## Useful Commands
 
-## 🔒 Data Security
+Backend:
 
-### Backup Strategy
-- **Automatic backups** created before every change
-- Backups stored as `backup_db_YYYYMMDD_HHMMSS.db`
-- Configurable retention (default: 30 most recent)
-- Manual backups: Copy `inventory.db` to safe location
+```bash
+cd backend
+npm run build
+npm test
+npm run db:seed:demo
+npm run migrate:legacy
+npm run migrate:legacy -- --apply
+```
 
-### Data Recovery
-1. Close the program
-2. Locate desired backup file
-3. Rename backup to `inventory.db`
-4. Restart program
+Frontend:
 
-### Best Practices
-- Regular exports to Excel for external backup
-- Store backups in cloud storage (Dropbox, Google Drive)
-- Test backups periodically
-- Keep program updated
+```bash
+cd frontend
+npm run build
+npm test -- --watch=false
+```
 
-## 🎯 Use Cases
+Docker:
 
-This system is perfect for:
-- **Biodegradable bag manufacturers**
-- **Packaging material distributors**
-- **Small to medium businesses** tracking inventory
-- **Businesses needing profit tracking**
-- **Operations requiring transaction history**
+```bash
+docker build -t inventory-management-system:local .
+docker compose up --build
+```
 
-## 🚀 Advanced Features
+## Legacy Migration
 
-### Dimension Normalization
-The system automatically standardizes dimension formats:
-- `10x16`, `10X16`, `10 x 16` → all stored as `10x16`
-- Prevents duplicate entries from formatting differences
+The one-off migration script reads the old SQLite database at `inventory.db` and maps:
 
-### Smart Autocomplete
-- Shows existing dimensions while typing
-- Suggests similar dimensions to prevent typos
-- Learn from your inventory patterns
+- `dimension` to a new item SKU/name
+- `amount_kg` to transaction quantity
+- `current_stock_kg` to resulting stock
+- `cost_per_kg` and `sell_per_kg` to unit cost/price
+- old free-text users to matching users or a historical import user
 
-### Audit Trail
-Every transaction records:
-- Date and time
-- User who made the change
-- Complete transaction details
-- Stock level before and after
+Dry run:
 
-## 📊 Sample Workflow
+```bash
+cd backend
+npm run migrate:legacy
+```
 
-### Starting a New Business
-1. Install and run the program
-2. Add initial stock inventory (use option 3 for past dates if needed)
-3. Configure low stock threshold
-4. Start recording daily sales
+Apply:
 
-### Monthly Review
-1. Run sales & profit report for the month
-2. Export to Excel for records
-3. Review sales velocity forecast
-4. Reorder low-stock items
+```bash
+npm run migrate:legacy -- --apply
+```
 
-### Year-End Analysis
-1. Generate annual sales report
-2. Export complete transaction history
-3. Analyze profitability by dimension
-4. Plan for next year based on velocity data
+## Current Phase Status
 
-## 🤝 Contributing
+- Phase 1: project foundation complete.
+- Phase 2: Prisma SQL Server model, migrations, and seed data complete.
+- Phase 3: auth, users, categories, units, items, settings, validation, and central errors complete.
+- Phase 4: transactions, undo, reports, velocity, and Excel export complete.
+- Phase 5: Angular auth, guards, interceptor, and app shell complete.
+- Phase 6: inventory, item detail, item form, transaction form/list, undo, and CSV import complete.
+- Phase 7: dashboard, reports, velocity, and Excel download complete.
+- Phase 8: legacy SQLite migration script complete.
+- Phase 9: local hardening and tests added; remaining production decisions are listed below.
+- Phase 10: Docker and CI scaffold complete; Azure resources still need account-specific setup.
+- Phase 11: README/project story updated; portfolio entry and live screenshots still depend on deployment.
 
-Contributions are welcome! Areas for enhancement:
-- Additional report types
-- Mobile app integration
-- Multi-user support
-- Barcode scanning
-- Supplier management
+## Known Follow-Ups
 
-## 📄 License
+- Set real production secrets through Azure App Service settings or Key Vault.
+- Create Azure SQL Database and Azure App Service resources, then wire the GitHub Actions deploy step to your subscription.
+- Replace the placeholder CI deploy section with your actual Azure publish profile or federated identity setup.
+- Address the remaining moderate `exceljs -> uuid` advisory when ExcelJS publishes a non-breaking fix.
+- Tune the Angular bundle budget or split more code if the initial budget warning matters for CI.
+- Add screenshots or a short GIF after the app is deployed.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Project Story
 
-## 🙏 Acknowledgments
-
-- Built with Python and SQLite
-- Uses Rich library for beautiful terminal UI
-- Pandas for data analysis
-- Matplotlib for charting
-- OpenPyXL for Excel export
-
-## 📞 Support
-
-For questions, issues, or suggestions:
-- **Email**: vsshashank23@gmail.com
-- **Issues**: GitHub Issues page
-- **Documentation**: See `docs/` folder
-
-## 🔄 Version History
-
-### v1.0.0 (Current)
-- ✅ Complete inventory tracking
-- ✅ Past transaction entry
-- ✅ Bulk entry wizard
-- ✅ Profit tracking
-- ✅ Sales analytics
-- ✅ Excel export
-- ✅ Automatic backups
-- ✅ Beautiful UI
-
----
-
-**Made with ❤️ for small businesses**
-
-*Last updated: October 2025*
+This project started as a useful single-file Python CLI with real inventory workflows, but it was tightly coupled to one business and mixed terminal presentation with database writes in the same functions. The rebuild generalizes the data model, adds a browser UI, introduces real authentication and security controls, preserves legacy data through migration, and packages the app for deployment on Azure.
