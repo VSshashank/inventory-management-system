@@ -1,0 +1,38 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: inventory-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Inventory_dev_2026!}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    container_name: inventory-app
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      FRONTEND_ORIGIN: http://localhost:3000
+      FRONTEND_ORIGINS: http://localhost:3000
+      DATABASE_URL: "sqlserver://sqlserver:1433;database=InventoryDb;user=sa;password=${MSSQL_SA_PASSWORD:-Inventory_dev_2026!};encrypt=true;trustServerCertificate=true;"
+      JWT_ACCESS_SECRET: "${JWT_ACCESS_SECRET:-dev-access-secret-change-me}"
+      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}"
+      JWT_MFA_SECRET: "${JWT_MFA_SECRET:-dev-mfa-secret-change-me}"
+    command: sh -c "npx prisma migrate deploy && npm run db:seed:demo && node dist/server.js"
+    ports:
+      - "3000:3000"
+
+volumes:
+  sqlserver-data:

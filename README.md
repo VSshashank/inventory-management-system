@@ -1,295 +1,149 @@
-📦 Business Inventory Management System
+# Inventory Management System
 
-A production-grade inventory management system with automated reporting, sales forecasting, and data analytics. Built for biodegradable bags business to replace manual Excel tracking.
+A full-stack inventory management app rebuilt from a working Python CLI into a generalized production-style web application.
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![SQLite](https://img.shields.io/badge/Database-SQLite-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+The original tool tracked biodegradable-bag stock in SQLite with terminal menus. This rebuild keeps the useful business workflows, then moves them into a layered app: Angular UI, Express + TypeScript API, Prisma, and SQL Server.
 
-🌟 Features
+## What It Does
 
-Core Functionality
-- ✅ Real-time Inventory Tracking - Add stock, record sales, view current levels
-- ✅ Automated Reporting - Date-filtered sales & profit reports
-- ✅ Sales Forecasting- Predict stock-out dates using historical data
-- ✅ Professional Excel Exports - 4-sheet reports with color coding
-- ✅ Visual Analytics- Auto-generated stock level charts
+- Tracks items across configurable categories and units of measure.
+- Records stock-in, sale, and adjustment transactions.
+- Prevents overselling on sales.
+- Supports backdated transaction entry for historical records.
+- Preserves undo as an audit-friendly transaction void instead of deleting history.
+- Shows current stock, low-stock status, recent activity, sales/profit, and stock velocity.
+- Exports a multi-sheet Excel report for stock, transaction history, and sales/profit.
+- Supports real user accounts with admin/staff roles, JWT sessions, refresh-token revocation, CSRF protection, and optional TOTP MFA.
+- Migrates historical data from the legacy `inventory.db` SQLite file.
 
-Data Protection
-- 🔒 30 Automatic Backups - Backup before every transaction
-- 🔒 SQLite Database- Bulletproof data storage
-- 🔒 Data Integrity Checks- Validation on startup
-- 🔒 Complete Audit Trail- Track who, what, when
-- 🔒 Undo Functionality- Reverse mistakes safely
+## Architecture
 
-User Experience
-- 🎨 Beautiful CLI Interface - Rich library with colors & tables
-- 🎨 Auto-complete- Dimension suggestions reduce typos
-- 🎨 Smart Validation- Prevents negative stock, invalid inputs
-- 🎨 Backdate Support- Add transactions for any date
-- 🎨 Low Stock Alerts- Automatic warnings
-
-🖼️ Screenshots
-
-Main Menu
-![Main Menu](screenshots/main-menu.png)
-
-Sales Report with Forecasting
-![Reports](screenshots/reports.png)
-
-Professional Excel Export (4 Sheets)
-![Excel Export](screenshots/excel-export.png)
-
-🚀 Quick Start
-
-Prerequisites
-- Python 3.8 or higher
-- pip (Python package manager)
-
-Installation
-
-1.Clone the repository:
-
-git clone https://github.com/VSshashank/inventory-management-system.git
-cd inventory-management-system
-
-
-2.Install dependencies:
-
-pip install -r requirements.txt
-
-
-3.Run the program:
-
-python inventory_tracker.py
-
-
-Or use the startup scripts:
-- Linux/Mac: `./scripts/START_INVENTORY.sh`
-- Windows: `scripts\START_INVENTORY.bat`
-
-📖 Usage
-
-Daily Operations
-
-Add Stock:
-```
-1. Choose option: 1
-2. Enter dimension (e.g., 10x16)
-3. Enter amount in kg
-4. Enter cost per kg (optional)
-5. Confirm
+```mermaid
+graph LR
+  A[Angular SPA<br/>Material + Chart.js] -->|REST + JWT| B[Express API<br/>TypeScript]
+  B --> C[Prisma ORM]
+  C --> D[(SQL Server)]
+  B --> E[Excel Export]
+  B --> F[Auth + CSRF + MFA]
 ```
 
-Record Sale:
-```
-1. Choose option: 2
-2. Enter dimension
-3. Enter amount sold
-4. Enter selling price (optional)
-5. Confirm
-```
+## Tech Stack
 
-View Inventory:
-```
-Choose option: 3
-See color-coded stock levels:
-🟢 Green = Good stock
-🟡 Yellow = Low stock (< 10kg)
-🔴 Red = Out of stock
-```
+- Backend: Node.js, Express, TypeScript, Zod, Prisma
+- Database: SQL Server
+- Frontend: Angular, Angular Material, Chart.js
+- Reports: ExcelJS
+- Security: Helmet, CORS allow-list, JWT access/refresh tokens, bcrypt, CSRF, optional TOTP MFA
+- Testing: Node test runner + Supertest, Angular/Vitest
+- Deployment: Docker, docker-compose, GitHub Actions scaffold
 
-Backdate Transactions
+## Local Setup
 
-Add Past Transaction:
-```
-1. Choose option: B
-2. Select Add Stock or Record Sale
-3. Enter details
-4. When asked "Use today's date?" → No
-5. Enter date (YYYY-MM-DD format)
-6. Confirm
+Start SQL Server:
+
+```bash
+docker compose up sqlserver
 ```
 
-Generate Reports
+Create `backend/.env` from `backend/.env.example`, then run:
 
-Monthly Profit Report:
-```
-1. Choose option: 5
-2. Select "This Month"
-3. View sales, profit, and forecast
-```
-
-Export to Excel:
-```
-1. Choose option: 9
-2. Professional 4-sheet Excel file created:
-   - Current Stock (color-coded)
-   - Transaction History
-   - Sales Summary
-   - Profit Analysis
+```bash
+cd backend
+npm install
+npx prisma migrate deploy
+npm run db:seed:demo
+npm run dev
 ```
 
-🏗️ Architecture
-```
-┌─────────────────────────────────────┐
-│     User Interface (Rich CLI)       │
-├─────────────────────────────────────┤
-│   Business Logic Layer              │
-│   - Stock Management                │
-│   - Sales Tracking                  │
-│   - Forecasting Algorithm           │
-│   - Report Generation               │
-├─────────────────────────────────────┤
-│   Data Access Layer                 │
-│   - SQLite Database                 │
-│   - Backup System                   │
-│   - Transaction Logging             │
-├─────────────────────────────────────┤
-│   Export Layer                      │
-│   - Excel (OpenPyXL)                │
-│   - Charts (Matplotlib)             │
-└─────────────────────────────────────┘
+In a second terminal:
+
+```bash
+cd frontend
+npm install
+npm start
 ```
 
-🗄️ Database Schema
-```sql
-CREATE TABLE transactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL,
-    time TEXT NOT NULL,
-    user TEXT NOT NULL,
-    dimension TEXT NOT NULL,
-    action TEXT NOT NULL,
-    amount_kg REAL NOT NULL,
-    current_stock_kg REAL NOT NULL,
-    cost_per_kg REAL DEFAULT 0,
-    sell_per_kg REAL DEFAULT 0,
-    notes TEXT DEFAULT ''
-);
+Open `http://localhost:4200`.
+
+Demo accounts after seeding:
+
+- Admin: `admin@example.com` / `AdminDemo!2026`
+- Staff: `staff@example.com` / `StaffDemo!2026`
+
+## Useful Commands
+
+Backend:
+
+```bash
+cd backend
+npm run build
+npm test
+npm run db:seed:demo
+npm run migrate:legacy
+npm run migrate:legacy -- --apply
 ```
 
-📊 Technical Highlights
+Frontend:
 
-Sales Forecasting Algorithm
-```python
-# Calculate average daily sales
-avg_per_day = total_sold / days_in_period
-
-# Predict stock-out date
-days_remaining = current_stock / avg_per_day
-
-# Alert levels:
-# 🔴 Red: < 7 days
-# 🟡 Yellow: < 14 days
-# 🟢 Green: >= 14 days
+```bash
+cd frontend
+npm run build
+npm test -- --watch=false
 ```
 
-Data Integrity
-- Automatic backup before every transaction
-- Validation checks on startup
-- Cannot sell more than available (hard block)
-- Full audit trail with timestamps
+Docker:
 
-Performance
-- Indexed database queries
-- Handles 100,000+ transactions
-- Sub-second report generation
-- Efficient backup rotation
-
-🛡️ Security Features
-
-- ✅ Input validation (prevents SQL injection)
-- ✅ User action tracking (audit trail)
-- ✅ Confirmation prompts (prevents accidents)
-- ✅ Automatic backups (disaster recovery)
-- ✅ Error logging (forensic analysis)
-- ✅ Data integrity checks (corruption detection)
-
-📈 Impact
-
-Before (Manual Excel):
-- 10 minutes daily tracking
-- Frequent calculation errors
-- No sales forecasting
-- 2+ hours for monthly reports
-- Risk of data loss
-
-After (This System):
-- 2 minutes daily tracking (80% reduction)
-- Zero calculation errors
-- Automated forecasting
-- 5 minutes for reports (95% reduction)
-- 30 backups, zero data loss
-
-🔧 Configuration
-
-Edit `config.json` to customize:
-```json
-{
-    "low_stock_threshold": 10,      // Alert when stock < 10kg
-    "backups_to_keep": 30,           // Number of backups
-    "default_currency": "₹",         // Currency symbol
-    "date_format": "%Y-%m-%d",       // Date format
-    "enable_charts": true,           // Generate charts
-    "enable_profit_tracking": true   // Track costs/revenue
-}
+```bash
+docker build -t inventory-management-system:local .
+docker compose up --build
 ```
 
-🤝 Contributing
+## Legacy Migration
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+The one-off migration script reads the old SQLite database at `inventory.db` and maps:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- `dimension` to a new item SKU/name
+- `amount_kg` to transaction quantity
+- `current_stock_kg` to resulting stock
+- `cost_per_kg` and `sell_per_kg` to unit cost/price
+- old free-text users to matching users or a historical import user
 
-📝 License
+Dry run:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```bash
+cd backend
+npm run migrate:legacy
+```
 
-👤 Author
+Apply:
 
-Shashank V S
-- GitHub: [@VSshashank](https://github.com/VSshashank)
-- LinkedIn: [linkedin.com/in/shashankvs](https://linkedin.com/in/shashankvs)
-- Email: vsshashank23@gmail.com
+```bash
+npm run migrate:legacy -- --apply
+```
 
-🙏 Acknowledgments
+## Current Phase Status
 
-- Built with love for family business
-- Inspired by real-world business needs
-- Thanks to the Python community for excellent libraries
+- Phase 1: project foundation complete.
+- Phase 2: Prisma SQL Server model, migrations, and seed data complete.
+- Phase 3: auth, users, categories, units, items, settings, validation, and central errors complete.
+- Phase 4: transactions, undo, reports, velocity, and Excel export complete.
+- Phase 5: Angular auth, guards, interceptor, and app shell complete.
+- Phase 6: inventory, item detail, item form, transaction form/list, undo, and CSV import complete.
+- Phase 7: dashboard, reports, velocity, and Excel download complete.
+- Phase 8: legacy SQLite migration script complete.
+- Phase 9: local hardening and tests added; remaining production decisions are listed below.
+- Phase 10: Docker and CI scaffold complete; Azure resources still need account-specific setup.
+- Phase 11: README/project story updated; portfolio entry and live screenshots still depend on deployment.
 
-📚 Documentation
+## Known Follow-Ups
 
-- [User Guide](docs/USER_GUIDE.md)
-- [Installation Guide](docs/INSTALLATION.md)
-- [API Documentation](docs/API.md)
+- Set real production secrets through Azure App Service settings or Key Vault.
+- Create Azure SQL Database and Azure App Service resources, then wire the GitHub Actions deploy step to your subscription.
+- Replace the placeholder CI deploy section with your actual Azure publish profile or federated identity setup.
+- Address the remaining moderate `exceljs -> uuid` advisory when ExcelJS publishes a non-breaking fix.
+- Tune the Angular bundle budget or split more code if the initial budget warning matters for CI.
+- Add screenshots or a short GIF after the app is deployed.
 
-🐛 Known Issues
+## Project Story
 
-None currently. Please report issues on the [Issues](https://github.com/VSshashank/inventory-management-system/issues) page.
-
-## 🔮 Future Enhancements
-
-- [ ] Web interface (Flask/Django)
-- [ ] Mobile app
-- [ ] Cloud backup integration
-- [ ] Multi-location support
-- [ ] Barcode scanning
-- [ ] WhatsApp notifications
-- [ ] Invoice generation
-- [ ] GST calculations
-
-📞 Support
-
-For support, email vsshashank23@gmail.com or open an issue.
-
----
-
-⭐ Star this repo if you find it useful!
-
-Made with ❤️ by [Shashank V S](https://github.com/VSshashank)
+This project started as a useful single-file Python CLI with real inventory workflows, but it was tightly coupled to one business and mixed terminal presentation with database writes in the same functions. The rebuild generalizes the data model, adds a browser UI, introduces real authentication and security controls, preserves legacy data through migration, and packages the app for deployment on Azure.

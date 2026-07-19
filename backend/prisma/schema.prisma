@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  passwordHash String
+  role         String        @default("STAFF") // Enum fallback for SQL Server
+  isActive     Boolean       @default(true)
+  tokenVersion Int           @default(0)   // bumped on deactivation/password change to invalidate outstanding JWTs
+  mfaSecret    String?                     // TOTP secret, set only if the user has enabled MFA
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  items Item[]
+}
+
+model UnitOfMeasure {
+  id           Int    @id @default(autoincrement())
+  name         String @unique   // e.g. "Kilogram", "Piece", "Litre"
+  abbreviation String            // e.g. "kg", "pcs", "L"
+  items        Item[]
+}
+
+model Item {
+  id                Int           @id @default(autoincrement())
+  sku               String        @unique
+  name              String
+  description       String?
+  categoryId        Int
+  category          Category      @relation(fields: [categoryId], references: [id])
+  unitId            Int
+  unit              UnitOfMeasure @relation(fields: [unitId], references: [id])
+  currentStock      Decimal       @default(0) @db.Decimal(14,3)
+  lowStockThreshold Decimal       @default(10) @db.Decimal(14,3)
+  isActive          Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  transactions      Transaction[]
+}
+
+model Transaction {
+  id              Int             @id @default(autoincrement())
+  itemId          Int
+  item            Item            @relation(fields: [itemId], references: [id])
+  userId          Int
+  user            User            @relation(fields: [userId], references: [id])
+  type            String          // Enum fallback (STOCK_IN, SALE, ADJUSTMENT)
+  quantity        Decimal         @db.Decimal(14,3)   // signed: + stock in, - sale
+  unitCost        Decimal?        @db.Decimal(14,2)
+  unitPrice       Decimal?        @db.Decimal(14,2)
+  resultingStock  Decimal         @db.Decimal(14,3)
+  notes           String?
+  isVoided        Boolean         @default(false)      // undo = void, not delete
+  transactionDate DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+
+  @@index([itemId])
+  @@index([userId])
+  @@index([transactionDate])
+}
+
+model OrgSettings {
+  id                       Int     @id @default(autoincrement()) // singleton row
+  businessName             String  @default("My Business")
+  currencySymbol           String  @default("₹")
+  defaultLowStockThreshold Decimal @default(10) @db.Decimal(14,3)
+  dateFormat               String  @default("yyyy-MM-dd")
+}

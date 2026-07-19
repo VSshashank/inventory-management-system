@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.angular
+**/.env
+**/*.log
+*.db
+backup_db_*.db
+stock_chart_*.png
+inventory_report_*.xlsx
+venv
+.git
