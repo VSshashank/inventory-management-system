@@ -28,6 +28,7 @@ import { stockStatus } from '../../shared/stock-status';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">ITEM DETAIL</p>
           <h1>{{ item()?.name || 'Item Detail' }}</h1>
           @if (item()) {
             <p class="muted">{{ item()?.sku }} · {{ item()?.category?.name }}</p>
@@ -146,27 +147,27 @@ import { stockStatus } from '../../shared/stock-status';
         gap: 16px;
       }
 
+      .item-summary > div {
+        padding: 4px 4px 4px 12px;
+        border-left: 3px solid var(--surface-strong);
+      }
+
+      .item-summary > div:first-child {
+        border-left-color: var(--brand);
+      }
+
       .label {
         display: block;
         margin-bottom: 6px;
-        color: #64748b;
-        font-size: 0.82rem;
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 700;
       }
 
       strong {
-        color: #14213d;
-        font-size: 1.2rem;
-      }
-
-      .section-title {
-        padding: 16px 20px 0;
-      }
-
-      .section-title h2 {
-        margin: 0;
-        color: #14213d;
+        color: var(--ink-strong);
         font-size: 1.1rem;
-        letter-spacing: 0;
+        font-weight: 800;
       }
 
       .actions {
@@ -175,7 +176,7 @@ import { stockStatus } from '../../shared/stock-status';
       }
 
       .voided {
-        opacity: 0.55;
+        opacity: 0.48;
         text-decoration: line-through;
       }
 

@@ -32,6 +32,7 @@ type Preset = '7' | '30' | 'month' | 'year' | 'all' | 'custom';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">PERFORMANCE</p>
           <h1>Reports</h1>
           <p class="muted">Sales, profit, stock velocity, and Excel export</p>
         </div>
@@ -66,11 +67,11 @@ type Preset = '7' | '30' | 'month' | 'year' | 'all' | 'custom';
 
       @if (sales()) {
         @let report = sales()!;
-        <section class="metric-grid">
-          <article><span>Revenue</span><strong>{{ report.totals.revenue | currency }}</strong></article>
-          <article><span>Cost</span><strong>{{ report.totals.cost | currency }}</strong></article>
-          <article><span>Profit</span><strong>{{ report.totals.profit | currency }}</strong></article>
-          <article><span>Margin</span><strong>{{ report.totals.profitMargin | number:'1.1-1' }}%</strong></article>
+        <section class="metric-rack report-rack" aria-label="Report summary">
+          <article><span class="metric-order">01</span><span>Revenue</span><strong>{{ report.totals.revenue | currency }}</strong><small>Sales in selected range</small></article>
+          <article><span class="metric-order">02</span><span>Cost</span><strong>{{ report.totals.cost | currency }}</strong><small>Cost of goods sold</small></article>
+          <article><span class="metric-order">03</span><span>Profit</span><strong>{{ report.totals.profit | currency }}</strong><small>Gross profit</small></article>
+          <article><span class="metric-order">04</span><span>Margin</span><strong>{{ report.totals.profitMargin | number:'1.1-1' }}%</strong><small>Gross profit margin</small></article>
         </section>
 
         <section class="table-panel">
@@ -104,17 +105,73 @@ type Preset = '7' | '30' | 'month' | 'year' | 'all' | 'custom';
     </section>
   `,
   styles: [`
-    .range-form { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .range-form mat-form-field { width: 180px; }
-    .metric-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:14px; }
-    .metric-grid article { border:1px solid #d9e2ec; border-radius:8px; background:#fff; padding:18px; }
-    .metric-grid span { display:block; color:#64748b; font-size:.84rem; margin-bottom:8px; }
-    .metric-grid strong { color:#14213d; font-size:1.45rem; }
-    .section-title { padding:16px 20px 0; }
-    .section-title h2 { margin:0; color:#14213d; font-size:1.1rem; letter-spacing:0; }
-    .alert { color:#b42318; font-weight:700; }
-    @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 560px) { .metric-grid { grid-template-columns: 1fr; } .range-form mat-form-field { width:100%; } }
+    .range-form {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .range-form mat-form-field {
+      width: 180px;
+      margin-bottom: -18px;
+    }
+    .metric-rack {
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      border:1px solid var(--line-strong);
+      background:var(--surface);
+    }
+    .metric-rack article {
+      display:grid;
+      min-width:0;
+      min-height:126px;
+      align-content:start;
+      padding:16px 17px;
+      border-left:1px solid var(--line);
+    }
+    .metric-rack article:first-child { border-left:0; }
+    .metric-order {
+      color:var(--muted);
+      font-family:var(--font-mono);
+      font-size:.64rem;
+    }
+    .metric-rack article > span:not(.metric-order) {
+      margin-top:14px;
+      color:var(--muted);
+      font-size:.73rem;
+      font-weight:600;
+    }
+    .metric-rack strong {
+      display:block;
+      overflow:hidden;
+      margin-top:4px;
+      color:var(--ink-strong);
+      font-size:clamp(1.2rem, 1.65vw, 1.55rem);
+      font-weight:700;
+      line-height:1.2;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .metric-rack small {
+      margin-top:6px;
+      color:var(--muted);
+      font-size:.69rem;
+      line-height:1.35;
+    }
+    .alert { color:#a6382e; font-weight:800; }
+    @media (max-width: 900px) {
+      .metric-rack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric-rack article:nth-child(3) { border-top:1px solid var(--line); border-left:0; }
+      .metric-rack article:nth-child(4) { border-top:1px solid var(--line); }
+    }
+    @media (max-width: 560px) {
+      .metric-rack { grid-template-columns: 1fr; }
+      .metric-rack article,
+      .metric-rack article:nth-child(3),
+      .metric-rack article:nth-child(4) { border-top:1px solid var(--line); border-left:0; }
+      .metric-rack article:first-child { border-top:0; }
+      .range-form mat-form-field { width:100%; }
+    }
   `],
 })
 export class ReportsComponent {

@@ -117,56 +117,65 @@ async function main() {
     },
   });
 
-  // Create sample transactions
-  await prisma.transaction.createMany({
-    data: [
-      {
-        itemId: mouse.id,
-        userId: admin.id,
-        type: 'STOCK_IN',
-        quantity: 50,
-        unitCost: 12.50,
-        resultingStock: 50,
-        notes: 'Initial stock',
+  // Create sample transactions.
+  //
+  // The ledger is the source of truth: `resultingStock` on each row and the
+  // item's final `currentStock` are both derived from these entries rather than
+  // hand-written, so seeded data can never contradict itself the way manually
+  // typed figures do. Sales carry `unitCost` as well as `unitPrice` so the
+  // sales/profit report shows a real cost of goods sold instead of a 100% margin.
+  const ledger: Array<{
+    itemId: number;
+    userId: number;
+    type: 'STOCK_IN' | 'SALE' | 'ADJUSTMENT';
+    quantity: number;
+    unitCost?: number;
+    unitPrice?: number;
+    notes: string;
+    daysAgo: number;
+  }> = [
+    { itemId: mouse.id, userId: admin.id, type: 'STOCK_IN', quantity: 50, unitCost: 12.5, notes: 'Initial stock', daysAgo: 26 },
+    { itemId: mouse.id, userId: staff.id, type: 'SALE', quantity: -5, unitCost: 12.5, unitPrice: 24.99, notes: 'Walk-in customer', daysAgo: 12 },
+    { itemId: mouse.id, userId: staff.id, type: 'SALE', quantity: -8, unitCost: 12.5, unitPrice: 24.99, notes: 'Online order #1042', daysAgo: 5 },
+    { itemId: bubbleWrap.id, userId: admin.id, type: 'STOCK_IN', quantity: 18, unitCost: 6.75, notes: 'Packaging restock', daysAgo: 24 },
+    { itemId: bubbleWrap.id, userId: staff.id, type: 'SALE', quantity: -3, unitCost: 6.75, unitPrice: 14.5, notes: 'Retail sale', daysAgo: 9 },
+    { itemId: paper.id, userId: admin.id, type: 'STOCK_IN', quantity: 20, unitCost: 8.0, notes: 'Monthly paper order', daysAgo: 21 },
+    { itemId: ink.id, userId: admin.id, type: 'STOCK_IN', quantity: 12, unitCost: 18.4, notes: 'Cartridge restock', daysAgo: 18 },
+    { itemId: ink.id, userId: staff.id, type: 'SALE', quantity: -4, unitCost: 18.4, unitPrice: 34.95, notes: 'Office resupply', daysAgo: 7 },
+    // Physical count came up one short — the adjustment path the CLI supported.
+    { itemId: ink.id, userId: admin.id, type: 'ADJUSTMENT', quantity: -1, notes: 'Physical count correction', daysAgo: 3 },
+    { itemId: keyboard.id, userId: admin.id, type: 'STOCK_IN', quantity: 25, unitCost: 45.0, notes: 'New product line', daysAgo: 15 },
+    { itemId: keyboard.id, userId: staff.id, type: 'SALE', quantity: -3, unitCost: 45.0, unitPrice: 89.99, notes: 'Corporate order', daysAgo: 4 },
+  ];
+
+  const runningStock = new Map<number, number>();
+
+  for (const entry of ledger) {
+    const resultingStock = (runningStock.get(entry.itemId) ?? 0) + entry.quantity;
+    runningStock.set(entry.itemId, resultingStock);
+
+    const transactionDate = new Date();
+    transactionDate.setDate(transactionDate.getDate() - entry.daysAgo);
+
+    await prisma.transaction.create({
+      data: {
+        itemId: entry.itemId,
+        userId: entry.userId,
+        type: entry.type,
+        quantity: entry.quantity,
+        unitCost: entry.unitCost ?? null,
+        unitPrice: entry.unitPrice ?? null,
+        resultingStock,
+        notes: entry.notes,
+        transactionDate,
       },
-      {
-        itemId: mouse.id,
-        userId: staff.id,
-        type: 'SALE',
-        quantity: -5,
-        unitPrice: 24.99,
-        resultingStock: 45,
-        notes: 'Walk-in customer',
-      },
-      {
-        itemId: paper.id,
-        userId: admin.id,
-        type: 'STOCK_IN',
-        quantity: 20,
-        unitCost: 8.00,
-        resultingStock: 20,
-        notes: 'Monthly paper order',
-      },
-      {
-        itemId: keyboard.id,
-        userId: admin.id,
-        type: 'STOCK_IN',
-        quantity: 25,
-        unitCost: 45.00,
-        resultingStock: 25,
-        notes: 'New product line',
-      },
-      {
-        itemId: keyboard.id,
-        userId: staff.id,
-        type: 'SALE',
-        quantity: -3,
-        unitPrice: 89.99,
-        resultingStock: 22,
-        notes: 'Corporate order',
-      },
-    ],
-  });
+    });
+  }
+
+  // Reconcile each item's stock with the ledger it was built from.
+  for (const [itemId, currentStock] of runningStock) {
+    await prisma.item.update({ where: { id: itemId }, data: { currentStock } });
+  }
 
   console.log('Database seeded successfully.');
 }

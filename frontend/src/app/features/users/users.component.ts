@@ -27,6 +27,7 @@ import type { User } from '../../core/models';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">TEAM ACCESS</p>
           <h1>Users</h1>
           <p class="muted">Admin-only staff management and account status</p>
         </div>
@@ -110,7 +111,7 @@ import type { User } from '../../core/models';
       .user-form {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 12px;
+        gap: 14px;
         align-items: start;
       }
 
@@ -125,23 +126,11 @@ import type { User } from '../../core/models';
       .role-field {
         width: 140px;
         margin-top: 10px;
+        margin-bottom: -18px;
       }
 
       .status-pill {
-        display: inline-flex;
-        min-width: 76px;
-        justify-content: center;
-        padding: 5px 9px;
-        border-radius: 999px;
-        background: #e4f6ea;
-        color: #176b3a;
-        font-weight: 700;
-        font-size: 0.82rem;
-      }
-
-      .status-pill.inactive {
-        background: #edf2f7;
-        color: #64748b;
+        min-width: 72px;
       }
 
       .actions {

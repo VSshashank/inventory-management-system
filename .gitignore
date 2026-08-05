@@ -40,33 +40,35 @@ inventory_report_*.xlsx
 stock_chart_*.png
 
 # ---------- Python (legacy CLI) ----------
+# Anchored to the repo root: unanchored, these match at any depth and would
+# swallow Node source directories (lib/, build/, env/) inside backend/ and frontend/.
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
+/build/
+/develop-eggs/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
+/pip-wheel-metadata/
+/share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
+/venv/
+/env/
+/ENV/
+/env.bak/
+/venv.bak/
 
 # ---------- Testing ----------
 .pytest_cache/

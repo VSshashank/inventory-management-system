@@ -30,6 +30,7 @@ import type { Category, UnitOfMeasure } from '../../core/models';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">CATALOG</p>
           <h1>{{ itemId ? 'Edit Item' : 'Add Item' }}</h1>
           <p class="muted">SKU, category, unit, and low-stock threshold</p>
         </div>
@@ -123,8 +124,8 @@ import type { Category, UnitOfMeasure } from '../../core/models';
       .item-form {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-        max-width: 920px;
+        gap: 18px;
+        max-width: 960px;
       }
 
       .wide {
@@ -134,7 +135,7 @@ import type { Category, UnitOfMeasure } from '../../core/models';
       .field-with-action {
         display: grid;
         grid-template-columns: 1fr 44px;
-        gap: 8px;
+        gap: 10px;
         align-items: start;
       }
 
@@ -147,6 +148,7 @@ import type { Category, UnitOfMeasure } from '../../core/models';
         display: flex;
         justify-content: flex-end;
         gap: 10px;
+        padding-top: 4px;
       }
 
       button mat-spinner,

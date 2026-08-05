@@ -13,4 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
   ]
+  // Chart.js registration lives on the dashboard component rather than here, so
+  // the charting library stays inside the lazy dashboard chunk instead of being
+  // pulled into the initial bundle for every page.
 };

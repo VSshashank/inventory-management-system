@@ -28,7 +28,19 @@ import { loginMfaSchema, loginSchema, mfaVerifySchema } from '../validators/auth
 
 const router = Router();
 const totp = new OTP({ strategy: 'totp' });
-const failedLogins = new Map<string, { count: number; lockedUntil: number }>();
+const failedLogins = new Map<string, { count: number; lockedUntil: number; updatedAt: number }>();
+// Failure counters are only meaningful while a lockout could still apply. Without
+// this ceiling the map grows once per distinct attempted address and never shrinks,
+// which is a slow memory leak an attacker can drive by guessing random emails.
+const failedLoginRetentionMs = 60 * 60 * 1000;
+
+function pruneFailedLogins(now: number): void {
+  for (const [key, state] of failedLogins) {
+    if (state.lockedUntil <= now && now - state.updatedAt > failedLoginRetentionMs) {
+      failedLogins.delete(key);
+    }
+  }
+}
 
 function assertNotLocked(email: string): void {
   const state = failedLogins.get(email);
@@ -39,11 +51,14 @@ function assertNotLocked(email: string): void {
 }
 
 function recordLoginFailure(email: string): void {
-  const current = failedLogins.get(email) ?? { count: 0, lockedUntil: 0 };
-  const count = current.count + 1;
-  const lockedUntil = count >= 8 ? Date.now() + 5 * 60 * 1000 : count >= 5 ? Date.now() + 60 * 1000 : 0;
+  const now = Date.now();
+  pruneFailedLogins(now);
 
-  failedLogins.set(email, { count, lockedUntil });
+  const current = failedLogins.get(email) ?? { count: 0, lockedUntil: 0, updatedAt: now };
+  const count = current.count + 1;
+  const lockedUntil = count >= 8 ? now + 5 * 60 * 1000 : count >= 5 ? now + 60 * 1000 : 0;
+
+  failedLogins.set(email, { count, lockedUntil, updatedAt: now });
   logger.warn({ email, count, lockedUntil }, 'auth login failure');
 }
 

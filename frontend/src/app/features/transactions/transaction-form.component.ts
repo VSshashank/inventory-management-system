@@ -36,6 +36,7 @@ import { TransactionDraftService } from './transaction-draft.service';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">STOCK MOVEMENT</p>
           <h1>New Transaction</h1>
           <p class="muted">Record stock-in, sale, adjustment, or backdated history</p>
         </div>
@@ -50,9 +51,9 @@ import { TransactionDraftService } from './transaction-draft.service';
           <form [formGroup]="typeForm">
             <ng-template matStepLabel>Type</ng-template>
             <mat-radio-group formControlName="type" class="type-grid">
-              <mat-radio-button value="STOCK_IN">Stock In</mat-radio-button>
-              <mat-radio-button value="SALE">Sale</mat-radio-button>
-              <mat-radio-button value="ADJUSTMENT">Adjustment</mat-radio-button>
+              <mat-radio-button class="type-option stock-in" value="STOCK_IN">Stock In</mat-radio-button>
+              <mat-radio-button class="type-option sale" value="SALE">Sale</mat-radio-button>
+              <mat-radio-button class="type-option adjustment" value="ADJUSTMENT">Adjustment</mat-radio-button>
             </mat-radio-group>
             <div class="step-actions">
               <button mat-flat-button color="primary" matStepperNext type="button">Next</button>
@@ -143,18 +144,90 @@ import { TransactionDraftService } from './transaction-draft.service';
     </section>
   `,
   styles: [`
-    .stepper { max-width: 920px; }
-    .type-grid { display: grid; gap: 12px; margin: 16px 0 24px; }
-    .details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
+    .stepper {
+      max-width: 980px;
+      padding: 8px 0 22px;
+    }
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      margin: 20px 0 26px;
+      border: 1px solid var(--line-strong);
+    }
+    .type-option {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      padding: 0 14px;
+      border: 0;
+      border-left: 1px solid var(--line);
+      border-radius: 0;
+      background: var(--surface);
+      color: var(--ink-strong);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    .type-option:first-child { border-left: 0; }
+    .type-option:hover {
+      background: var(--surface-soft);
+    }
+    .type-option:has(input:checked) { background: var(--surface-strong); }
+    .type-option.stock-in { border-top: 3px solid var(--brand); }
+    .type-option.sale { border-top: 3px solid #5a8eaa; }
+    .type-option.adjustment { border-top: 3px solid var(--amber); }
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
     .wide { grid-column: 1 / -1; }
     mat-form-field { width: 100%; }
-    .step-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .step-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
     .step-actions mat-spinner, .step-actions mat-icon { margin-right: 8px; }
-    .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
-    .summary div { border: 1px solid #d9e2ec; border-radius: 8px; padding: 14px; }
-    .summary span { display: block; color: #64748b; font-size: .82rem; margin-bottom: 4px; }
-    .summary strong { color: #14213d; }
-    @media (max-width: 720px) { .details-grid, .summary { grid-template-columns: 1fr; } }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+      margin: 22px 0;
+      border: 1px solid var(--line-strong);
+    }
+    .summary div {
+      padding: 14px;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      border-radius: 0;
+      background: var(--surface-soft);
+    }
+    .summary div:nth-child(odd) { border-left: 0; }
+    .summary div:nth-child(-n + 2) { border-top: 0; }
+    .summary span {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: .73rem;
+      font-weight: 700;
+    }
+    .summary strong { color: var(--ink-strong); font-size: .88rem; }
+    @media (max-width: 720px) {
+      .type-grid, .details-grid, .summary { grid-template-columns: 1fr; }
+      .type-option,
+      .type-option:first-child { border-top: 1px solid var(--line); border-left: 0; }
+      .type-option:first-child { border-top: 0; }
+      .summary div,
+      .summary div:nth-child(odd),
+      .summary div:nth-child(-n + 2) { border-top: 1px solid var(--line); border-left: 0; }
+      .summary div:first-child { border-top: 0; }
+    }
   `],
 })
 export class TransactionFormComponent {

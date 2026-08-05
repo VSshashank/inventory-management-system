@@ -186,11 +186,14 @@ export async function undoStockTransaction(transactionId: number) {
         data: { currentStock: resultingStock },
       });
 
+      // Only flip the void flag. `resultingStock` records what the stock was
+      // immediately after this transaction was originally written — rewriting it
+      // to the post-undo figure would destroy the audit trail the void is meant
+      // to preserve.
       return tx.transaction.update({
         where: { id: transactionId },
         data: {
           isVoided: true,
-          resultingStock,
         },
         include: {
           item: { select: { id: true, sku: true, name: true } },

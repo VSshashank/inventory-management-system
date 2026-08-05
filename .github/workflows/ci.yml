@@ -58,6 +58,8 @@ jobs:
 
       - name: Backend test
         working-directory: backend
+        env:
+          NODE_ENV: test
         run: npm test
 
       - name: Backend build
@@ -82,3 +84,110 @@ jobs:
 
       - name: Docker build
         run: docker build -t inventory-management-system .
+
+  deploy:
+    name: Deploy to Azure App Service
+    needs: build-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # Every step below needs Azure resources that are created per-subscription.
+    # Until those secrets exist the job is skipped rather than failing the run,
+    # so the pipeline stays green for anyone who clones this without an Azure
+    # account. See README "Deployment" for the one-time setup.
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deployment secrets are configured
+        id: guard
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+          REGISTRY_LOGIN_SERVER: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+        run: |
+          if [ -z "$AZURE_CREDENTIALS" ] || [ -z "$AZURE_WEBAPP_NAME" ] || [ -z "$REGISTRY_LOGIN_SERVER" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Azure deployment secrets are not set — skipping deploy."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Azure login
+        if: steps.guard.outputs.configured == 'true'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Registry login
+        if: steps.guard.outputs.configured == 'true'
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push image
+        if: steps.guard.outputs.configured == 'true'
+        env:
+          IMAGE: ${{ secrets.REGISTRY_LOGIN_SERVER }}/inventory-management-system
+        run: |
+          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" .
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
+
+      - name: Setup Node for migrations
+        if: steps.guard.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Apply database migrations
+        if: steps.guard.outputs.configured == 'true'
+        working-directory: backend
+        env:
+          # Points at Azure SQL Database. Never committed — set as a repository
+          # secret, or resolved from Key Vault by the App Service managed identity.
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npm ci
+          npx prisma migrate deploy
+
+      - name: Seed demo data
+        # Demo data only, never the real business data — the public demo is
+        # reset on each deploy so visitors always see a known-good dataset.
+        if: steps.guard.outputs.configured == 'true' && vars.SEED_DEMO_ON_DEPLOY == 'true'
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:seed:demo
+
+      - name: Deploy to App Service
+        if: steps.guard.outputs.configured == 'true'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          images: ${{ secrets.REGISTRY_LOGIN_SERVER }}/inventory-management-system:${{ github.sha }}
+
+      - name: Smoke test the deployment
+        if: steps.guard.outputs.configured == 'true'
+        env:
+          APP_URL: ${{ secrets.AZURE_WEBAPP_URL }}
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "::notice::AZURE_WEBAPP_URL not set — skipping smoke test."
+            exit 0
+          fi
+          for attempt in $(seq 1 10); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' "$APP_URL/api/health" || true)
+            if [ "$status" = "200" ]; then
+              echo "Health check passed."
+              exit 0
+            fi
+            echo "Attempt $attempt: health check returned $status; retrying..."
+            sleep 15
+          done
+          echo "::error::Deployment did not become healthy."
+          exit 1
