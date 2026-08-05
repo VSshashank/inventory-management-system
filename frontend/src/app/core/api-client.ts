@@ -2,12 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../environments/environment';
+
 type QueryValue = string | number | boolean | null | undefined;
 
 @Injectable({ providedIn: 'root' })
 export class ApiClient {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:3000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   get<T>(path: string, query?: Record<string, QueryValue>): Observable<T> {
     return this.http.get<T>(this.url(path), {

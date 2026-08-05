@@ -23,8 +23,9 @@ import { InventoryApiService } from '../../core/inventory-api.service';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">CONFIGURATION</p>
           <h1>Settings</h1>
-          <p class="muted">Business profile, currency, and stock defaults</p>
+          <p class="muted">Business profile, accounting defaults, and stock limits</p>
         </div>
       </header>
 
@@ -67,8 +68,8 @@ import { InventoryApiService } from '../../core/inventory-api.service';
       .settings-form {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-        max-width: 860px;
+        gap: 18px;
+        max-width: 920px;
       }
 
       .actions {

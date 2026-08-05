@@ -1,6 +1,7 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, finalize, map, of, shareReplay, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { SKIP_AUTH_REFRESH } from './http-context';
 import type { User } from './models';
 
@@ -10,10 +11,25 @@ interface AuthResponse {
   user: User;
 }
 
+/** The backend answers a login for an MFA-enabled account with a challenge instead of tokens. */
+interface MfaChallengeResponse {
+  mfaRequired: true;
+  pendingToken: string;
+}
+
+type LoginResponse = AuthResponse | MfaChallengeResponse;
+
+/** Either the session is established, or the caller must collect a TOTP code. */
+export type LoginResult = { status: 'authenticated'; user: User } | { status: 'mfa-required'; pendingToken: string };
+
+function isMfaChallenge(response: LoginResponse): response is MfaChallengeResponse {
+  return 'mfaRequired' in response && response.mfaRequired;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:3000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
   private accessToken: string | null = null;
   private refreshRequest$?: Observable<User>;
 
@@ -21,9 +37,9 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this.user() !== null);
   readonly isAdmin = computed(() => this.user()?.role === 'ADMIN');
 
-  login(email: string, password: string): Observable<User> {
+  login(email: string, password: string): Observable<LoginResult> {
     return this.http
-      .post<AuthResponse>(
+      .post<LoginResponse>(
         `${this.baseUrl}/auth/login`,
         { email, password },
         {
@@ -31,10 +47,30 @@ export class AuthService {
           withCredentials: true,
         },
       )
-      .pipe(
-        tap((response) => this.applySession(response)),
-        map((response) => response.user),
-      );
+      .pipe(map((response) => this.toLoginResult(response)));
+  }
+
+  /** Completes a login that returned an `mfaRequired` challenge. */
+  verifyMfa(pendingToken: string, code: string): Observable<LoginResult> {
+    return this.http
+      .post<LoginResponse>(
+        `${this.baseUrl}/auth/login/mfa`,
+        { pendingToken, code },
+        {
+          context: new HttpContext().set(SKIP_AUTH_REFRESH, true),
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => this.toLoginResult(response)));
+  }
+
+  private toLoginResult(response: LoginResponse): LoginResult {
+    if (isMfaChallenge(response)) {
+      return { status: 'mfa-required', pendingToken: response.pendingToken };
+    }
+
+    this.applySession(response);
+    return { status: 'authenticated', user: response.user };
   }
 
   refresh(): Observable<User> {

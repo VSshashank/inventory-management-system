@@ -121,28 +121,61 @@ Apply:
 npm run migrate:legacy -- --apply
 ```
 
+## Deployment
+
+The image serves the API and the built Angular app from one origin, so a single
+App Service container runs the whole thing. In production the frontend talks to
+`/api` on its own origin (`src/environments/environment.prod.ts`); only the dev
+server points at `localhost:3000`.
+
+The `deploy` job in `.github/workflows/ci.yml` runs on pushes to `main`. It
+builds and pushes the image, applies `prisma migrate deploy`, optionally reseeds
+demo data, deploys to App Service, and polls `/api/health` until the new
+revision answers. It skips itself with a notice when the Azure secrets are
+absent, so a fork without an Azure account still gets a green pipeline.
+
+One-time setup — create an Azure SQL Database (free offer) and an App Service
+(F1), then set these repository secrets:
+
+| Secret | Purpose |
+|---|---|
+| `AZURE_CREDENTIALS` | Service principal JSON for `azure/login` |
+| `AZURE_WEBAPP_NAME` | Target App Service name |
+| `AZURE_WEBAPP_URL` | Base URL, used by the post-deploy smoke test |
+| `REGISTRY_LOGIN_SERVER` / `REGISTRY_USERNAME` / `REGISTRY_PASSWORD` | Container registry |
+| `DATABASE_URL` | Azure SQL connection string used for migrations |
+
+Set repository variable `SEED_DEMO_ON_DEPLOY=true` to reset the public demo
+dataset on each deploy. Application secrets (`JWT_ACCESS_SECRET`,
+`JWT_REFRESH_SECRET`, `JWT_MFA_SECRET`, `DATABASE_URL`) belong in App Service
+Application Settings or Key Vault — the app refuses to boot in production if a
+signing secret is missing or still set to the shipped development default.
+
 ## Current Phase Status
 
-- Phase 1: project foundation complete.
-- Phase 2: Prisma SQL Server model, migrations, and seed data complete.
-- Phase 3: auth, users, categories, units, items, settings, validation, and central errors complete.
-- Phase 4: transactions, undo, reports, velocity, and Excel export complete.
-- Phase 5: Angular auth, guards, interceptor, and app shell complete.
-- Phase 6: inventory, item detail, item form, transaction form/list, undo, and CSV import complete.
-- Phase 7: dashboard, reports, velocity, and Excel download complete.
-- Phase 8: legacy SQLite migration script complete.
-- Phase 9: local hardening and tests added; remaining production decisions are listed below.
-- Phase 10: Docker and CI scaffold complete; Azure resources still need account-specific setup.
-- Phase 11: README/project story updated; portfolio entry and live screenshots still depend on deployment.
+Verified against a running SQL Server, a live API, and the app in a browser —
+not just "the code exists".
+
+| Phase | State | How it was checked |
+|---|---|---|
+| 1 — Foundation | Complete | Both dev servers boot; `/api/health` returns 200 |
+| 2 — Data model | Complete | 4 migrations applied; seed creates non-bag categories, 4 units, 5 items |
+| 3 — Auth & CRUD | Complete | Login, RBAC 403s, CSRF 403, soft delete, page-size cap, token revocation |
+| 4 — Transactions & reports | Complete | Oversell rejected, undo reverses stock, 3-sheet Excel export opens |
+| 5 — Frontend auth | Complete | Login → dashboard in browser; guards redirect; MFA challenge step |
+| 6 — Inventory & transactions UI | Complete | Item CRUD, stepper, bulk entry, CSV import, undo toasts |
+| 7 — Reports & dashboard | Complete | Stock chart renders; date presets; Excel download |
+| 8 — Legacy migration | Complete | Dry run against the real `inventory.db` reports 2/2 rows ready |
+| 9 — Security & testing | Complete | 18 backend + 6 frontend tests; headers, rate limits, revocation verified |
+| 10 — Docker & CI/CD | Code complete | Image builds; deploy job added — needs an Azure subscription to run |
+| 11 — Polish | Code complete | README current; screenshots and portfolio entry await a live URL |
 
 ## Known Follow-Ups
 
-- Set real production secrets through Azure App Service settings or Key Vault.
-- Create Azure SQL Database and Azure App Service resources, then wire the GitHub Actions deploy step to your subscription.
-- Replace the placeholder CI deploy section with your actual Azure publish profile or federated identity setup.
-- Address the remaining moderate `exceljs -> uuid` advisory when ExcelJS publishes a non-breaking fix.
-- Tune the Angular bundle budget or split more code if the initial budget warning matters for CI.
-- Add screenshots or a short GIF after the app is deployed.
+- Create the Azure SQL Database and App Service, then add the secrets in the table above.
+- Add screenshots or a short GIF, and the portfolio entry, once the demo URL is live.
+- Account lockout state is in-process; move it to a shared store if the app is ever scaled past one instance.
+- `exceljs -> uuid` carries a moderate advisory with no non-breaking fix published yet; CI fails only on high/critical.
 
 ## Project Story
 

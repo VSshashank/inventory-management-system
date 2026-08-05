@@ -45,7 +45,8 @@ interface CsvImportRow {
     <section class="page">
       <header class="page-header">
         <div>
-          <h1>Inventory</h1>
+          <p class="page-kicker">CATALOG</p>
+          <h1>Inventory catalog</h1>
           <p class="muted">{{ totalItems() }} active items</p>
         </div>
         <div class="toolbar-row">
@@ -61,23 +62,26 @@ interface CsvImportRow {
         </div>
       </header>
 
-      <div class="toolbar-row filters">
-        <mat-form-field appearance="outline">
-          <mat-label>Search</mat-label>
-          <input matInput [formControl]="searchControl" placeholder="SKU or name" />
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+      <section class="filter-panel">
+        <div class="filter-label"><mat-icon>tune</mat-icon><span>Filter inventory</span></div>
+        <div class="toolbar-row filters">
+          <mat-form-field appearance="outline">
+            <mat-label>Search</mat-label>
+            <input matInput [formControl]="searchControl" placeholder="SKU or name" />
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Category</mat-label>
-          <mat-select [formControl]="categoryControl">
-            <mat-option value="">All categories</mat-option>
-            @for (category of categories(); track category.id) {
-              <mat-option [value]="category.id">{{ category.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select [formControl]="categoryControl">
+              <mat-option value="">All categories</mat-option>
+              @for (category of categories(); track category.id) {
+                <mat-option [value]="category.id">{{ category.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </section>
 
       @if (importRows().length) {
         <section class="summary-panel import-preview">
@@ -128,6 +132,13 @@ interface CsvImportRow {
       }
 
       <section class="table-panel">
+        <div class="panel-heading inventory-heading">
+          <div>
+            <p class="section-kicker">ALL INVENTORY</p>
+            <h2>Items in stock</h2>
+          </div>
+          <span>{{ totalItems() }} total</span>
+        </div>
         @if (loading()) {
           <div class="empty-state"><mat-spinner diameter="32" /></div>
         } @else if (!items().length) {
@@ -137,16 +148,21 @@ interface CsvImportRow {
             <table mat-table [dataSource]="items()">
               <ng-container matColumnDef="sku">
                 <th mat-header-cell *matHeaderCellDef>SKU</th>
-                <td mat-cell *matCellDef="let item">{{ item.sku }}</td>
+                <td mat-cell *matCellDef="let item"><span class="sku-code">{{ item.sku }}</span></td>
               </ng-container>
 
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Name</th>
                 <td mat-cell *matCellDef="let item">
-                  <a [routerLink]="['/inventory', item.id]">{{ item.name }}</a>
-                  @if (item.description) {
-                    <div class="muted compact">{{ item.description }}</div>
-                  }
+                  <div class="item-identity">
+                    <span class="item-symbol"><mat-icon>inventory_2</mat-icon></span>
+                    <div>
+                      <a [routerLink]="['/inventory', item.id]">{{ item.name }}</a>
+                      @if (item.description) {
+                        <div class="muted compact">{{ item.description }}</div>
+                      }
+                    </div>
+                  </div>
                 </td>
               </ng-container>
 
@@ -200,13 +216,88 @@ interface CsvImportRow {
   `,
   styles: [
     `
+      .filter-panel {
+        display: flex;
+        min-height: 70px;
+        align-items: center;
+        gap: 18px;
+        padding: 12px 16px;
+        border: 1px solid var(--line-strong);
+        border-left: 3px solid var(--brand);
+        border-radius: 3px;
+        background: var(--surface);
+        box-shadow: none;
+      }
+
+      .filter-label {
+        display: flex;
+        min-width: 124px;
+        align-items: center;
+        gap: 7px;
+        color: var(--ink-strong);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 500;
+      }
+
+      .filter-label mat-icon {
+        width: 18px;
+        height: 18px;
+        color: var(--brand);
+        font-size: 18px;
+      }
+
       .filters mat-form-field {
-        width: min(100%, 280px);
+        width: min(100%, 270px);
+        margin-bottom: -18px;
+      }
+
+      .inventory-heading > span {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 500;
+      }
+
+      .sku-code {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 500;
+      }
+
+      .item-identity {
+        display: flex;
+        min-width: 210px;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .item-symbol {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        background: var(--surface-strong);
+        color: var(--brand-strong);
+      }
+
+      .item-symbol mat-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
       }
 
       .compact {
         margin-top: 2px;
-        font-size: 0.82rem;
+        max-width: 320px;
+        font-size: 0.74rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .actions {
@@ -222,8 +313,9 @@ interface CsvImportRow {
 
       .import-preview h2 {
         margin: 0;
-        color: #14213d;
+        color: var(--ink-strong);
         font-size: 1.1rem;
+        font-weight: 750;
         letter-spacing: 0;
       }
 
@@ -235,19 +327,44 @@ interface CsvImportRow {
       .import-preview th,
       .import-preview td {
         padding: 10px 12px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--line);
         text-align: left;
       }
 
       .error-text {
-        color: #b42318;
+        color: #a6382e;
         font-weight: 700;
       }
 
-      a {
-        color: #1769aa;
+      .item-identity a {
+        color: var(--ink-strong);
         font-weight: 700;
         text-decoration: none;
+      }
+
+      .item-identity a:hover {
+        color: var(--brand-strong);
+      }
+
+      @media (max-width: 860px) {
+        .filter-panel {
+          display: grid;
+          gap: 6px;
+        }
+
+        .filters {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .filter-panel {
+          padding: 12px;
+        }
+
+        .filters mat-form-field {
+          width: 100%;
+        }
       }
     `,
   ],

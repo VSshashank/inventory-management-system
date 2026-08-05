@@ -16,6 +16,7 @@ import type { InventoryTransaction } from '../../core/models';
     <section class="page">
       <header class="page-header">
         <div>
+          <p class="page-kicker">MOVEMENT HISTORY</p>
           <h1>Transactions</h1>
           <p class="muted">Stock movement audit trail</p>
         </div>
@@ -33,7 +34,7 @@ import type { InventoryTransaction } from '../../core/models';
             <table mat-table [dataSource]="transactions()">
               <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef>Date</th><td mat-cell *matCellDef="let row">{{ row.transactionDate | date:'medium' }}</td></ng-container>
               <ng-container matColumnDef="item"><th mat-header-cell *matHeaderCellDef>Item</th><td mat-cell *matCellDef="let row">{{ row.item?.sku }} · {{ row.item?.name }}</td></ng-container>
-              <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef>Type</th><td mat-cell *matCellDef="let row">{{ row.type }}</td></ng-container>
+              <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef>Type</th><td mat-cell *matCellDef="let row"><span class="transaction-type" [class.sale]="row.type === 'SALE'" [class.stock-in]="row.type === 'STOCK_IN'" [class.adjustment]="row.type === 'ADJUSTMENT'">{{ row.type === 'STOCK_IN' ? 'Stock in' : row.type === 'SALE' ? 'Sale' : 'Adjustment' }}</span></td></ng-container>
               <ng-container matColumnDef="quantity"><th mat-header-cell *matHeaderCellDef>Quantity</th><td mat-cell *matCellDef="let row">{{ row.quantity }}</td></ng-container>
               <ng-container matColumnDef="resulting"><th mat-header-cell *matHeaderCellDef>Resulting</th><td mat-cell *matCellDef="let row">{{ row.resultingStock }}</td></ng-container>
               <ng-container matColumnDef="user"><th mat-header-cell *matHeaderCellDef>User</th><td mat-cell *matCellDef="let row">{{ row.user?.name }}</td></ng-container>
@@ -53,7 +54,26 @@ import type { InventoryTransaction } from '../../core/models';
       </section>
     </section>
   `,
-  styles: [`.actions { text-align: right; width: 56px; } .voided { opacity: .55; text-decoration: line-through; }`],
+  styles: [`
+    .actions { text-align: right; width: 56px; }
+    .voided { opacity: .48; text-decoration: line-through; }
+    .transaction-type {
+      display: inline-flex;
+      align-items: center;
+      min-width: 82px;
+      justify-content: center;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--surface-strong);
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .transaction-type.stock-in { background: var(--brand-soft); color: var(--brand-strong); }
+    .transaction-type.sale { background: #e5f0f8; color: #35677e; }
+    .transaction-type.adjustment { background: var(--amber-soft); color: #8a5c00; }
+  `],
 })
 export class TransactionsListComponent {
   readonly columns = ['date', 'item', 'type', 'quantity', 'resulting', 'user', 'actions'];

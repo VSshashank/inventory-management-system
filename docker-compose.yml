@@ -2,6 +2,10 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: inventory-sqlserver
+    # The official SQL Server image is amd64-only. On Apple Silicon this runs
+    # under emulation, which Docker Desktop supports but does not select on its
+    # own — without this the container fails to start on an arm64 host.
+    platform: linux/amd64
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Inventory_dev_2026!}"

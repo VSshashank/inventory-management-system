@@ -8,7 +8,7 @@ import { config } from './config/index.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { httpsRedirect } from './middleware/https-redirect.js';
-import { authRateLimiter } from './middleware/rate-limit.js';
+import { authRateLimiter, refreshRateLimiter } from './middleware/rate-limit.js';
 import { logger } from './lib/logger.js';
 import authRouter from './routes/auth.js';
 import categoriesRouter from './routes/categories.js';
@@ -56,7 +56,10 @@ app.use(csrfProtection);
 
 // Routes
 app.use('/api', healthRouter);
-app.use('/api/auth', authRateLimiter, authRouter);
+// Strict budget for credential submission, generous one for automatic refresh.
+app.use('/api/auth/login', authRateLimiter);
+app.use('/api/auth/refresh', refreshRateLimiter);
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/units', unitsRouter);
