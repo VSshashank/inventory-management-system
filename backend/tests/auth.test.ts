@@ -8,11 +8,17 @@ import { prisma } from '../src/lib/prisma.js';
 
 const unique = Date.now();
 const totp = new OTP({ strategy: 'totp' });
-const adminEmail = 'admin@example.com';
-const adminPassword = 'AdminDemo!2026';
+// Dedicated accounts rather than the seeded admin@example.com. The MFA tests
+// switch `mfaSecret` on and off, and `node --test` runs test files
+// concurrently — sharing the seeded admin with api.test.ts would let its
+// login land inside that window and receive an `mfaRequired` challenge
+// instead of tokens.
+const adminEmail = `auth-admin-${unique}@example.com`;
+const adminPassword = 'AuthAdmin!2026x';
 const staffEmail = `auth-staff-${unique}@example.com`;
 const staffPassword = 'AuthStaff!2026x';
 const createdUserIds: number[] = [];
+let staffId = 0;
 
 async function login(email: string, password: string) {
   const agent = request.agent(app);
@@ -22,22 +28,14 @@ async function login(email: string, password: string) {
 
 describe('auth', () => {
   before(async () => {
-    await prisma.user.upsert({
-      where: { email: adminEmail },
-      update: {
-        passwordHash: await bcrypt.hash(adminPassword, 12),
-        role: 'ADMIN',
-        isActive: true,
-        mfaSecret: null,
-      },
-      create: {
-        name: 'Admin User',
+    const admin = await prisma.user.create({
+      data: {
+        name: `Auth Admin ${unique}`,
         email: adminEmail,
         passwordHash: await bcrypt.hash(adminPassword, 12),
         role: 'ADMIN',
       },
     });
-
     const staff = await prisma.user.create({
       data: {
         name: `Auth Staff ${unique}`,
@@ -46,12 +44,13 @@ describe('auth', () => {
         role: 'STAFF',
       },
     });
-    createdUserIds.push(staff.id);
+
+    staffId = staff.id;
+    createdUserIds.push(admin.id, staff.id);
   });
 
   after(async () => {
     await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
-    await prisma.user.update({ where: { email: adminEmail }, data: { mfaSecret: null } });
     await prisma.$disconnect();
   });
 
@@ -111,7 +110,7 @@ describe('auth', () => {
 
     const admin = await login(adminEmail, adminPassword);
     const changed = await admin.agent
-      .patch(`/api/users/${createdUserIds[0]}`)
+      .patch(`/api/users/${staffId}`)
       .set('Authorization', `Bearer ${admin.response.body.accessToken}`)
       .set('X-CSRF-Token', admin.response.body.csrfToken)
       .send({ password: `Rotated!${unique}aB` });
