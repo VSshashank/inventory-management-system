@@ -30,7 +30,6 @@ import type { Category, UnitOfMeasure } from '../../core/models';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">CATALOG</p>
           <h1>{{ itemId ? 'Edit Item' : 'Add Item' }}</h1>
           <p class="muted">SKU, category, unit, and low-stock threshold</p>
         </div>

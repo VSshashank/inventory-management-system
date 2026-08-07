@@ -32,7 +32,6 @@ type Preset = '7' | '30' | 'month' | 'year' | 'all' | 'custom';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">PERFORMANCE</p>
           <h1>Reports</h1>
           <p class="muted">Sales, profit, stock velocity, and Excel export</p>
         </div>
@@ -68,10 +67,10 @@ type Preset = '7' | '30' | 'month' | 'year' | 'all' | 'custom';
       @if (sales()) {
         @let report = sales()!;
         <section class="metric-rack report-rack" aria-label="Report summary">
-          <article><span class="metric-order">01</span><span>Revenue</span><strong>{{ report.totals.revenue | currency }}</strong><small>Sales in selected range</small></article>
-          <article><span class="metric-order">02</span><span>Cost</span><strong>{{ report.totals.cost | currency }}</strong><small>Cost of goods sold</small></article>
-          <article><span class="metric-order">03</span><span>Profit</span><strong>{{ report.totals.profit | currency }}</strong><small>Gross profit</small></article>
-          <article><span class="metric-order">04</span><span>Margin</span><strong>{{ report.totals.profitMargin | number:'1.1-1' }}%</strong><small>Gross profit margin</small></article>
+          <article><span>Revenue</span><strong class="stat-value">{{ report.totals.revenue | currency }}</strong><small>Sales in selected range</small></article>
+          <article><span>Cost</span><strong class="stat-value">{{ report.totals.cost | currency }}</strong><small>Cost of goods sold</small></article>
+          <article><span>Profit</span><strong class="stat-value">{{ report.totals.profit | currency }}</strong><small>Gross profit</small></article>
+          <article><span>Margin</span><strong class="stat-value">{{ report.totals.profitMargin | number:'1.1-1' }}%</strong><small>Gross profit margin</small></article>
         </section>
 
         <section class="table-panel">
@@ -118,58 +117,47 @@ type Preset = '7' | '30' | 'month' | 'year' | 'all' | 'custom';
     .metric-rack {
       display:grid;
       grid-template-columns:repeat(4, minmax(0, 1fr));
-      border:1px solid var(--line-strong);
-      background:var(--surface);
+      gap:16px;
     }
     .metric-rack article {
       display:grid;
       min-width:0;
-      min-height:126px;
       align-content:start;
-      padding:16px 17px;
-      border-left:1px solid var(--line);
+      padding:18px 20px;
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      background:var(--surface);
+      box-shadow:var(--shadow-xs);
     }
-    .metric-rack article:first-child { border-left:0; }
-    .metric-order {
+    .metric-rack article > span {
       color:var(--muted);
-      font-family:var(--font-mono);
-      font-size:.64rem;
-    }
-    .metric-rack article > span:not(.metric-order) {
-      margin-top:14px;
-      color:var(--muted);
-      font-size:.73rem;
-      font-weight:600;
+      font-size:.8125rem;
+      font-weight:500;
     }
     .metric-rack strong {
       display:block;
       overflow:hidden;
-      margin-top:4px;
+      margin-top:8px;
       color:var(--ink-strong);
-      font-size:clamp(1.2rem, 1.65vw, 1.55rem);
-      font-weight:700;
-      line-height:1.2;
+      font-size:1.75rem;
+      font-weight:600;
+      letter-spacing:-.02em;
+      line-height:1.15;
       text-overflow:ellipsis;
       white-space:nowrap;
     }
     .metric-rack small {
       margin-top:6px;
-      color:var(--muted);
-      font-size:.69rem;
-      line-height:1.35;
+      color:var(--subtle);
+      font-size:.8125rem;
+      line-height:1.4;
     }
-    .alert { color:#a6382e; font-weight:800; }
+    .alert { color:var(--danger); font-weight:600; }
     @media (max-width: 900px) {
       .metric-rack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .metric-rack article:nth-child(3) { border-top:1px solid var(--line); border-left:0; }
-      .metric-rack article:nth-child(4) { border-top:1px solid var(--line); }
     }
     @media (max-width: 560px) {
       .metric-rack { grid-template-columns: 1fr; }
-      .metric-rack article,
-      .metric-rack article:nth-child(3),
-      .metric-rack article:nth-child(4) { border-top:1px solid var(--line); border-left:0; }
-      .metric-rack article:first-child { border-top:0; }
       .range-form mat-form-field { width:100%; }
     }
   `],

@@ -16,6 +16,8 @@ interface NavItem {
   icon: string;
   route: string;
   adminOnly?: boolean;
+  /** `/transactions` would otherwise stay highlighted while on `/transactions/new`. */
+  exact?: boolean;
 }
 
 @Component({
@@ -42,29 +44,28 @@ interface NavItem {
       >
         <div class="rail-inner">
           <a class="brand" routerLink="/dashboard" (click)="closeMobileNav()">
-            <span class="brand-mark" aria-hidden="true">IC</span>
-            <span class="brand-copy">
-              <strong>Inventory</strong>
-              <small>Control system</small>
+            <span class="brand-mark" aria-hidden="true">
+              <mat-icon>inventory_2</mat-icon>
             </span>
+            <span class="brand-name">Inventory</span>
           </a>
 
-          <p class="nav-label">Modules</p>
           <mat-nav-list class="nav-list">
             @for (item of navItems; track item.route) {
               @if (!item.adminOnly || auth.isAdmin()) {
-                <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link" (click)="closeMobileNav()">
+                <a
+                  mat-list-item
+                  [routerLink]="item.route"
+                  routerLinkActive="active-link"
+                  [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                  (click)="closeMobileNav()"
+                >
                   <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
                   <span matListItemTitle>{{ item.label }}</span>
                 </a>
               }
             }
           </mat-nav-list>
-
-          <div class="rail-footer">
-            <span class="connection-dot" aria-hidden="true"></span>
-            <span>System online</span>
-          </div>
         </div>
       </mat-sidenav>
 
@@ -80,21 +81,17 @@ interface NavItem {
             <mat-icon>menu</mat-icon>
           </button>
 
-          <div class="topbar-context">
-            <span class="topbar-kicker">OPERATIONS / CONTROL</span>
-            <span class="topbar-title">Inventory management</span>
-            <span class="topbar-date">{{ today | date: 'EEEE, MMMM d' }}</span>
-          </div>
+          <span class="topbar-date">{{ today | date: 'EEEE, d MMMM' }}</span>
 
           <span class="spacer"></span>
 
           <div class="account">
+            <span class="avatar" aria-hidden="true">{{ initials() }}</span>
             <span class="account-copy">
               <strong>{{ auth.user()?.name }}</strong>
-              <small>{{ auth.user()?.role === 'ADMIN' ? 'Admin access' : 'Staff access' }}</small>
+              <small>{{ auth.user()?.role === 'ADMIN' ? 'Administrator' : 'Staff' }}</small>
             </span>
-            <span class="avatar" aria-hidden="true">{{ initials() }}</span>
-            <button mat-icon-button type="button" aria-label="Log out" (click)="logout()">
+            <button mat-icon-button type="button" aria-label="Sign out" (click)="logout()">
               <mat-icon>logout</mat-icon>
             </button>
           </div>
@@ -114,178 +111,112 @@ interface NavItem {
       }
 
       .rail {
-        width: 232px;
-        border-right: 1px solid #111512;
-        background: var(--rail);
+        width: 244px;
+        border-right: none;
+        background: var(--sidebar);
       }
 
       .rail-inner {
         display: flex;
         min-height: 100%;
         flex-direction: column;
-        padding: 18px 10px 14px;
+        padding: 16px 12px;
       }
 
       .brand {
         display: flex;
         align-items: center;
         gap: 10px;
-        min-height: 52px;
-        padding: 7px 8px;
-        color: var(--rail-text);
+        min-height: 44px;
+        margin-bottom: 20px;
+        padding: 0 8px;
+        color: var(--sidebar-text);
         text-decoration: none;
       }
 
       .brand-mark {
         display: grid;
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
+        flex: 0 0 auto;
         place-items: center;
-        background: var(--marker);
-        color: var(--rail-strong);
-        font-family: var(--font-mono);
-        font-size: 0.66rem;
-        font-weight: 500;
+        border-radius: 7px;
+        background: var(--brand);
+        color: #ffffff;
       }
 
-      .brand-copy {
-        display: grid;
-        gap: 2px;
+      .brand-mark mat-icon {
+        width: 18px;
+        height: 18px;
+        color: #ffffff;
+        font-size: 18px;
       }
 
-      .brand-copy strong {
-        font-size: 0.88rem;
-        font-weight: 700;
-        line-height: 1.2;
+      .brand-name {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
       }
 
-      .brand-copy small {
-        color: var(--rail-muted);
-        font-family: var(--font-mono);
-        font-size: 0.62rem;
-        line-height: 1.2;
-      }
-
-      .account-copy small {
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.62rem;
-        line-height: 1.2;
-      }
-
-      .nav-label {
-        margin: 34px 10px 10px;
-        color: var(--rail-muted);
-        font-family: var(--font-mono);
-        font-size: 0.64rem;
-        font-weight: 500;
-        line-height: 1.2;
-        letter-spacing: 0;
-        text-transform: uppercase;
-      }
-
+      /* Material paints list labels from its own theme tokens, so a plain
+         CSS color on the anchor never reaches them. These are the mat-
+         prefixed tokens; the mdc- ones are not what the label reads. */
       .nav-list {
+        --mat-list-list-item-label-text-color: #c3cad9;
+        --mat-list-list-item-leading-icon-color: #c3cad9;
+        --mat-list-list-item-hover-label-text-color: #ffffff;
+        --mat-list-list-item-hover-leading-icon-color: #ffffff;
+        --mat-list-list-item-focus-label-text-color: #ffffff;
+        --mat-list-list-item-hover-state-layer-color: transparent;
+        --mat-list-list-item-focus-state-layer-color: transparent;
+        --mat-list-list-item-label-text-size: 0.875rem;
+        --mat-list-list-item-label-text-weight: 500;
         padding: 0;
       }
 
       .nav-list a[mat-list-item] {
-        position: relative;
-        margin: 1px 0;
-        border-radius: 0;
-        color: #bdc7bd;
-        font-size: 0.82rem;
-        font-weight: 600;
+        height: 38px !important;
+        margin-bottom: 2px;
+        border-radius: var(--radius) !important;
       }
 
       .nav-list a[mat-list-item] mat-icon {
-        color: #8f9c90;
+        width: 19px;
+        height: 19px;
+        font-size: 19px;
       }
 
       .nav-list a[mat-list-item]:hover {
-        background: #2b322b;
-        color: var(--rail-text);
+        background: var(--sidebar-hover);
       }
 
       .nav-list a.active-link {
-        background: #303a31;
-        color: var(--rail-text);
-      }
-
-      .nav-list a.active-link::before {
-        position: absolute;
-        top: 8px;
-        bottom: 8px;
-        left: 0;
-        width: 3px;
-        background: var(--marker);
-        content: '';
-      }
-
-      .nav-list a.active-link mat-icon {
-        color: var(--marker);
-      }
-
-      .rail-footer {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: auto 8px 2px;
-        padding: 14px 2px 2px;
-        border-top: 1px solid #3b453c;
-        color: var(--rail-muted);
-        font-family: var(--font-mono);
-        font-size: 0.63rem;
-      }
-
-      .connection-dot {
-        width: 6px;
-        height: 6px;
-        background: var(--marker);
+        --mat-list-list-item-label-text-color: #ffffff;
+        --mat-list-list-item-leading-icon-color: #93b4fd;
+        --mat-list-list-item-label-text-weight: 600;
+        background: var(--sidebar-active);
       }
 
       .topbar {
         position: sticky;
         top: 0;
         z-index: 10;
-        min-height: 62px;
-        padding: 0 32px;
+        min-height: 60px;
+        padding: 0 28px;
         border-bottom: 1px solid var(--line);
-        background: var(--surface);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
         color: var(--ink);
-      }
-
-      .topbar-context {
-        display: grid;
-        grid-template-columns: auto auto;
-        align-items: baseline;
-        column-gap: 10px;
-        row-gap: 1px;
-      }
-
-      .topbar-kicker {
-        grid-column: 1 / -1;
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.62rem;
-      }
-
-      .topbar-title {
-        color: var(--ink-strong);
-        font-size: 0.81rem;
-        font-weight: 700;
-        line-height: 1.2;
       }
 
       .topbar-date {
         color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.62rem;
-        line-height: 1.2;
+        font-size: 0.8125rem;
       }
 
       .mobile-nav-toggle {
         display: none;
-        margin-right: 6px;
+        margin-right: 8px;
       }
 
       .spacer {
@@ -295,48 +226,53 @@ interface NavItem {
       .account {
         display: flex;
         align-items: center;
-        gap: 9px;
+        gap: 10px;
       }
 
       .account-copy {
         display: grid;
-        gap: 2px;
-        max-width: 180px;
-        text-align: right;
+        gap: 1px;
+        max-width: 170px;
       }
 
       .account-copy strong {
         overflow: hidden;
         color: var(--ink-strong);
-        font-size: 0.75rem;
-        font-weight: 700;
-        line-height: 1.2;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.3;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
+      .account-copy small {
+        color: var(--muted);
+        font-size: 0.75rem;
+        line-height: 1.3;
+      }
+
       .avatar {
         display: grid;
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         flex: 0 0 auto;
         place-items: center;
-        background: var(--surface-strong);
-        color: var(--ink-strong);
-        font-family: var(--font-mono);
-        font-size: 0.67rem;
-        font-weight: 500;
+        border-radius: 50%;
+        background: var(--brand-soft);
+        color: var(--brand-deep);
+        font-size: 0.75rem;
+        font-weight: 600;
       }
 
       .content {
-        min-height: calc(100dvh - 62px);
-        padding: 32px 36px 44px;
+        min-height: calc(100dvh - 60px);
+        padding: 28px 32px 48px;
       }
 
       @media (max-width: 920px) {
         .rail {
-          width: min(82vw, 280px);
-          box-shadow: 12px 0 28px rgba(21, 26, 22, 0.22);
+          width: min(80vw, 272px);
+          box-shadow: var(--shadow-lg);
         }
 
         .mobile-nav-toggle {
@@ -344,25 +280,22 @@ interface NavItem {
         }
 
         .content {
-          padding: 26px 24px 36px;
+          padding: 24px 20px 36px;
         }
       }
 
       @media (max-width: 640px) {
         .topbar {
-          min-height: 60px;
-          padding: 0 14px;
+          padding: 0 12px;
         }
 
         .topbar-date,
-        .topbar-kicker,
         .account-copy {
           display: none;
         }
 
         .content {
-          min-height: calc(100dvh - 60px);
-          padding: 20px 16px 30px;
+          padding: 20px 16px 32px;
         }
       }
     `,
@@ -392,13 +325,13 @@ export class AppShellComponent {
   private readonly router = inject(Router);
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+    { label: 'Dashboard', icon: 'space_dashboard', route: '/dashboard' },
     { label: 'Inventory', icon: 'inventory_2', route: '/inventory' },
-    { label: 'New Transaction', icon: 'add_circle', route: '/transactions/new' },
-    { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
-    { label: 'Reports', icon: 'query_stats', route: '/reports' },
+    { label: 'New transaction', icon: 'add_circle', route: '/transactions/new' },
+    { label: 'Transactions', icon: 'receipt_long', route: '/transactions', exact: true },
+    { label: 'Reports', icon: 'monitoring', route: '/reports' },
     { label: 'Settings', icon: 'settings', route: '/settings', adminOnly: true },
-    { label: 'Users', icon: 'manage_accounts', route: '/users', adminOnly: true },
+    { label: 'Users', icon: 'group', route: '/users', adminOnly: true },
   ];
 
   closeMobileNav(): void {

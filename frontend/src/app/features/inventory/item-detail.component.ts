@@ -28,7 +28,6 @@ import { stockStatus } from '../../shared/stock-status';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">ITEM DETAIL</p>
           <h1>{{ item()?.name || 'Item Detail' }}</h1>
           @if (item()) {
             <p class="muted">{{ item()?.sku }} · {{ item()?.category?.name }}</p>
@@ -92,7 +91,20 @@ import { stockStatus } from '../../shared/stock-status';
 
                 <ng-container matColumnDef="type">
                   <th mat-header-cell *matHeaderCellDef>Type</th>
-                  <td mat-cell *matCellDef="let transaction">{{ transaction.type }}</td>
+                  <td mat-cell *matCellDef="let transaction">
+                    <span
+                      class="transaction-type"
+                      [class.sale]="transaction.type === 'SALE'"
+                      [class.stock-in]="transaction.type === 'STOCK_IN'"
+                      [class.adjustment]="transaction.type === 'ADJUSTMENT'"
+                    >{{
+                      transaction.type === 'STOCK_IN'
+                        ? 'Stock in'
+                        : transaction.type === 'SALE'
+                          ? 'Sale'
+                          : 'Adjustment'
+                    }}</span>
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="quantity">
@@ -144,30 +156,22 @@ import { stockStatus } from '../../shared/stock-status';
       .item-summary {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-      }
-
-      .item-summary > div {
-        padding: 4px 4px 4px 12px;
-        border-left: 3px solid var(--surface-strong);
-      }
-
-      .item-summary > div:first-child {
-        border-left-color: var(--brand);
+        gap: 32px;
       }
 
       .label {
         display: block;
         margin-bottom: 6px;
         color: var(--muted);
-        font-size: 0.75rem;
-        font-weight: 700;
+        font-size: 0.8125rem;
+        font-weight: 500;
       }
 
       strong {
         color: var(--ink-strong);
-        font-size: 1.1rem;
-        font-weight: 800;
+        font-size: 1.375rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
       }
 
       .actions {
@@ -183,7 +187,36 @@ import { stockStatus } from '../../shared/stock-status';
       @media (max-width: 720px) {
         .item-summary {
           grid-template-columns: 1fr;
+          gap: 20px;
         }
+      }
+
+      .transaction-type {
+        display: inline-flex;
+        align-items: center;
+        min-width: 82px;
+        justify-content: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--surface-strong);
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+      .transaction-type.stock-in {
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+
+      .transaction-type.sale {
+        background: var(--info-soft);
+        color: var(--info);
+      }
+
+      .transaction-type.adjustment {
+        background: var(--warn-soft);
+        color: var(--warn);
       }
     `,
   ],

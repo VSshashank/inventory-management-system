@@ -23,7 +23,6 @@ import { InventoryApiService } from '../../core/inventory-api.service';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">CONFIGURATION</p>
           <h1>Settings</h1>
           <p class="muted">Business profile, accounting defaults, and stock limits</p>
         </div>

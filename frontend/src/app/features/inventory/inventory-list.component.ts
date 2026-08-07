@@ -45,7 +45,6 @@ interface CsvImportRow {
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">CATALOG</p>
           <h1>Inventory catalog</h1>
           <p class="muted">{{ totalItems() }} active items</p>
         </div>
@@ -134,7 +133,6 @@ interface CsvImportRow {
       <section class="table-panel">
         <div class="panel-heading inventory-heading">
           <div>
-            <p class="section-kicker">ALL INVENTORY</p>
             <h2>Items in stock</h2>
           </div>
           <span>{{ totalItems() }} total</span>
@@ -216,54 +214,37 @@ interface CsvImportRow {
   `,
   styles: [
     `
+      /* The filters sit inline above the table rather than in their own
+         boxed panel — one less frame between the user and the data. */
       .filter-panel {
         display: flex;
-        min-height: 70px;
         align-items: center;
-        gap: 18px;
-        padding: 12px 16px;
-        border: 1px solid var(--line-strong);
-        border-left: 3px solid var(--brand);
-        border-radius: 3px;
-        background: var(--surface);
-        box-shadow: none;
+        gap: 12px;
       }
 
       .filter-label {
-        display: flex;
-        min-width: 124px;
-        align-items: center;
-        gap: 7px;
-        color: var(--ink-strong);
-        font-family: var(--font-mono);
-        font-size: 0.78rem;
-        font-weight: 500;
+        display: none;
       }
 
-      .filter-label mat-icon {
-        width: 18px;
-        height: 18px;
-        color: var(--brand);
-        font-size: 18px;
+      .filters {
+        flex: 1 1 auto;
+        gap: 12px;
       }
 
       .filters mat-form-field {
-        width: min(100%, 270px);
+        width: min(100%, 260px);
         margin-bottom: -18px;
       }
 
       .inventory-heading > span {
         color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.76rem;
-        font-weight: 500;
+        font-size: 0.8125rem;
       }
 
       .sku-code {
         color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.76rem;
-        font-weight: 500;
+        font-size: 0.8125rem;
+        font-variant-numeric: tabular-nums;
       }
 
       .item-identity {
@@ -333,12 +314,12 @@ interface CsvImportRow {
 
       .error-text {
         color: #a6382e;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .item-identity a {
         color: var(--ink-strong);
-        font-weight: 700;
+        font-weight: 600;
         text-decoration: none;
       }
 

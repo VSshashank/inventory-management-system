@@ -21,7 +21,6 @@ import { stockStatus } from '../../shared/stock-status';
     <section class="page dashboard-page">
       <header class="page-header dashboard-header">
         <div>
-          <p class="page-kicker">OVERVIEW / {{ today | date: 'yyyy-MM-dd' }}</p>
           <h1>Dashboard</h1>
           <p>Track stock position, replenishment pressure, and movement in one place.</p>
         </div>
@@ -39,38 +38,41 @@ import { stockStatus } from '../../shared/stock-status';
 
       @if (summary()) {
         @let data = summary()!;
-        <section class="control-line" [class.requires-attention]="data.lowStockCount > 0">
-          <div class="control-line-main">
-            <span class="control-indicator">LIVE</span>
-            <strong>{{ data.lowStockCount > 0 ? 'Replenishment review required' : 'Inventory position is within target' }}</strong>
-            <span>{{ data.lowStockCount > 0 ? data.lowStockCount + ' item' + (data.lowStockCount === 1 ? '' : 's') + ' reached a low-stock threshold.' : 'No stock alerts need action right now.' }}</span>
-          </div>
-          <a routerLink="/inventory">{{ data.lowStockCount > 0 ? 'Review inventory' : 'View catalog' }}</a>
-        </section>
+        <!-- Only worth a banner when something actually needs doing; an
+             everything-is-fine bar is just noise on every visit. -->
+        @if (data.lowStockCount > 0) {
+          <section class="control-line requires-attention">
+            <div class="control-line-main">
+              <mat-icon>warning</mat-icon>
+              <strong>Replenishment needed</strong>
+              <span>
+                {{ data.lowStockCount }} item{{ data.lowStockCount === 1 ? '' : 's' }} fell to or below
+                the reorder threshold.
+              </span>
+            </div>
+            <a routerLink="/inventory">Review inventory</a>
+          </section>
+        }
 
         <section class="metric-rack" aria-label="Inventory summary">
           <article>
-            <span class="metric-order">01</span>
             <span class="metric-label">Items tracked</span>
-            <strong>{{ data.totalItems }}</strong>
+            <strong class="stat-value">{{ data.totalItems }}</strong>
             <small>Active catalog records</small>
           </article>
           <article [class.is-alert]="data.lowStockCount > 0">
-            <span class="metric-order">02</span>
             <span class="metric-label">Low stock</span>
-            <strong>{{ data.lowStockCount }}</strong>
+            <strong class="stat-value">{{ data.lowStockCount }}</strong>
             <small>{{ data.lowStockCount > 0 ? 'Requires review' : 'No active alerts' }}</small>
           </article>
           <article>
-            <span class="metric-order">03</span>
             <span class="metric-label">Inventory value</span>
-            <strong>{{ data.totalInventoryValue | currency }}</strong>
+            <strong class="stat-value">{{ data.totalInventoryValue | currency }}</strong>
             <small>Current on-hand value</small>
           </article>
           <article>
-            <span class="metric-order">04</span>
             <span class="metric-label">Today&apos;s movements</span>
-            <strong>{{ data.todayTransactionCount }}</strong>
+            <strong class="stat-value">{{ data.todayTransactionCount }}</strong>
             <small>Recorded by your team</small>
           </article>
         </section>
@@ -79,10 +81,9 @@ import { stockStatus } from '../../shared/stock-status';
           <section class="table-panel chart-panel">
             <div class="panel-heading">
               <div>
-                <p class="section-kicker">STOCK POSITION</p>
                 <h2>Units on hand</h2>
+                <p>Current stock across tracked items</p>
               </div>
-              <span class="panel-reference">CHART / 01</span>
             </div>
             <div class="chart-area">
               <canvas baseChart [data]="chartData()" [options]="chartOptions" [type]="'bar'"></canvas>
@@ -92,7 +93,6 @@ import { stockStatus } from '../../shared/stock-status';
           <section class="table-panel activity-panel">
             <div class="panel-heading">
               <div>
-                <p class="section-kicker">ACTIVITY LOG</p>
                 <h2>Latest movement</h2>
               </div>
               <a routerLink="/transactions" class="view-all">All records</a>
@@ -106,7 +106,7 @@ import { stockStatus } from '../../shared/stock-status';
                     </span>
                     <div class="activity-copy">
                       <strong>{{ transaction.item?.name }}</strong>
-                      <span>{{ movementLabel(transaction) }} / {{ transaction.quantity }} units</span>
+                      <span>{{ movementLabel(transaction) }} &middot; {{ transaction.quantity }} units</span>
                     </div>
                     <time>{{ transaction.transactionDate | date: 'MMM d, h:mm a' }}</time>
                   </div>
@@ -128,18 +128,13 @@ import { stockStatus } from '../../shared/stock-status';
 
       .control-line {
         display: flex;
-        min-height: 58px;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 11px 14px;
-        border: 1px solid var(--line-strong);
-        border-left: 4px solid var(--brand);
-        background: var(--surface);
-      }
-
-      .control-line.requires-attention {
-        border-left-color: var(--amber);
+        padding: 13px 16px;
+        border: 1px solid var(--warn-line);
+        border-radius: var(--radius-lg);
+        background: var(--warn-soft);
       }
 
       .control-line-main {
@@ -149,46 +144,51 @@ import { stockStatus } from '../../shared/stock-status';
         gap: 10px;
       }
 
-      .control-indicator,
-      .panel-reference {
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.63rem;
-        font-weight: 500;
-      }
-
-      .control-indicator {
-        padding: 4px 5px;
-        border: 1px solid var(--line-strong);
-        color: var(--brand-strong);
-      }
-
-      .requires-attention .control-indicator {
-        color: #7d5600;
+      .control-line-main mat-icon {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 auto;
+        color: var(--warn);
+        font-size: 19px;
       }
 
       .control-line strong {
-        color: var(--ink-strong);
-        font-size: 0.81rem;
-        font-weight: 700;
+        color: #7a2e0e;
+        font-size: 0.875rem;
+        font-weight: 600;
         white-space: nowrap;
       }
 
       .control-line-main > span:last-child {
         overflow: hidden;
-        color: var(--muted);
-        font-size: 0.77rem;
+        color: var(--warn);
+        font-size: 0.875rem;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
-      .control-line > a,
+      .control-line > a {
+        flex: 0 0 auto;
+        color: #7a2e0e;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .control-line > a:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
       .view-all {
         flex: 0 0 auto;
-        color: var(--ink-strong);
-        font-family: var(--font-mono);
-        font-size: 0.67rem;
+        color: var(--brand-strong);
+        font-size: 0.8125rem;
         font-weight: 500;
+        text-decoration: none;
+      }
+
+      .view-all:hover {
         text-decoration: underline;
         text-underline-offset: 3px;
       }
@@ -196,47 +196,39 @@ import { stockStatus } from '../../shared/stock-status';
       .metric-rack {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        border: 1px solid var(--line-strong);
-        background: var(--surface);
+        gap: 16px;
       }
 
       .metric-rack article {
         display: grid;
         min-width: 0;
-        min-height: 132px;
         align-content: start;
-        padding: 16px 17px;
-        border-left: 1px solid var(--line);
-      }
-
-      .metric-rack article:first-child {
-        border-left: 0;
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-xs);
       }
 
       .metric-rack article.is-alert {
-        background: var(--amber-soft);
-      }
-
-      .metric-order {
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.64rem;
+        border-color: var(--warn-line);
+        background: var(--warn-soft);
       }
 
       .metric-label {
-        margin-top: 14px;
         color: var(--muted);
-        font-size: 0.73rem;
-        font-weight: 600;
+        font-size: 0.8125rem;
+        font-weight: 500;
       }
 
       .metric-rack strong {
         display: block;
         overflow: hidden;
-        margin-top: 4px;
+        margin-top: 8px;
         color: var(--ink-strong);
-        font-size: clamp(1.3rem, 1.9vw, 1.7rem);
-        font-weight: 700;
+        font-size: 1.75rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
         line-height: 1.15;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -244,15 +236,15 @@ import { stockStatus } from '../../shared/stock-status';
 
       .metric-rack small {
         margin-top: 6px;
-        color: var(--muted);
-        font-size: 0.69rem;
-        line-height: 1.35;
+        color: var(--subtle);
+        font-size: 0.8125rem;
+        line-height: 1.4;
       }
 
       .dashboard-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
-        gap: 18px;
+        grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
+        gap: 16px;
       }
 
       .chart-panel,
@@ -308,7 +300,7 @@ import { stockStatus } from '../../shared/stock-status';
       }
 
       .movement-token.adjustment {
-        background: var(--amber-soft);
+        background: var(--warn-soft);
         color: #7d5600;
       }
 
@@ -327,7 +319,7 @@ import { stockStatus } from '../../shared/stock-status';
       .activity-copy strong {
         color: var(--ink-strong);
         font-size: 0.78rem;
-        font-weight: 700;
+        font-weight: 600;
         line-height: 1.35;
       }
 
@@ -335,7 +327,6 @@ import { stockStatus } from '../../shared/stock-status';
       time {
         margin-top: 2px;
         color: var(--muted);
-        font-family: var(--font-mono);
         font-size: 0.62rem;
         line-height: 1.35;
       }
@@ -348,15 +339,6 @@ import { stockStatus } from '../../shared/stock-status';
       @media (max-width: 1120px) {
         .metric-rack {
           grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .metric-rack article:nth-child(3) {
-          border-left: 0;
-          border-top: 1px solid var(--line);
-        }
-
-        .metric-rack article:nth-child(4) {
-          border-top: 1px solid var(--line);
         }
 
         .dashboard-grid {
@@ -383,20 +365,18 @@ import { stockStatus } from '../../shared/stock-status';
           white-space: normal;
         }
 
+        /* Two up rather than one: these values are short, and a single
+           column pushes the chart below a full screen of scrolling. */
         .metric-rack {
-          grid-template-columns: 1fr;
+          gap: 12px;
         }
 
-        .metric-rack article,
-        .metric-rack article:nth-child(3),
-        .metric-rack article:nth-child(4) {
-          min-height: 108px;
-          border-top: 1px solid var(--line);
-          border-left: 0;
+        .metric-rack article {
+          padding: 14px 16px;
         }
 
-        .metric-rack article:first-child {
-          border-top: 0;
+        .metric-rack strong {
+          font-size: 1.375rem;
         }
 
         .chart-area,
@@ -427,11 +407,14 @@ export class DashboardComponent {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#202520',
+        backgroundColor: '#0f1729',
         titleColor: '#ffffff',
-        bodyColor: '#e7ece7',
+        bodyColor: '#d5dae5',
         displayColors: false,
+        cornerRadius: 8,
         padding: 10,
+        titleFont: { family: 'Inter', size: 12, weight: 600 },
+        bodyFont: { family: 'Inter', size: 12 },
         callbacks: {
           label: (context) => `${context.parsed.y} units`,
         },
@@ -441,13 +424,13 @@ export class DashboardComponent {
       x: {
         border: { display: false },
         grid: { display: false },
-        ticks: { color: '#667269', font: { family: 'IBM Plex Sans', size: 11 } },
+        ticks: { color: '#667085', font: { family: 'Inter', size: 11 } },
       },
       y: {
         beginAtZero: true,
         border: { display: false },
-        grid: { color: '#e1e7e0' },
-        ticks: { color: '#667269', font: { family: 'IBM Plex Sans', size: 11 } },
+        grid: { color: '#eceef2' },
+        ticks: { color: '#667085', font: { family: 'Inter', size: 11 }, padding: 6 },
       },
     },
   };
@@ -459,13 +442,14 @@ export class DashboardComponent {
         {
           label: 'Current stock',
           data: items.map((item) => item.currentStock),
-          borderRadius: 1,
+          borderRadius: 6,
           borderSkipped: false,
+          maxBarThickness: 56,
           backgroundColor: items.map((item) => {
             const status = stockStatus(item);
-            if (status.className === 'out') return '#c94f3e';
-            if (status.className === 'low') return '#c88a16';
-            return '#226f67';
+            if (status.className === 'out') return '#e5484d';
+            if (status.className === 'low') return '#f5a524';
+            return '#2563eb';
           }),
         },
       ],

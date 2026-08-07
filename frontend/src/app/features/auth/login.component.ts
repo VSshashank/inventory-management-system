@@ -14,52 +14,14 @@ import { AuthService } from '../../core/auth.service';
   imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
   template: `
     <main class="access-page">
-      <header class="access-bar">
-        <a class="product-mark" href="/login" aria-label="Inventory Control sign in">
-          <span class="product-symbol">IC</span>
-          <span class="product-copy">
-            <strong>Inventory</strong>
-            <small>Control system</small>
-          </span>
-        </a>
-        <span class="access-status"><span aria-hidden="true"></span>System online</span>
-      </header>
-
       <section class="access-content">
-        <aside class="access-context">
-          <div class="context-heading">
-            <span class="context-index">01</span>
-            <p>OPERATIONS CONSOLE</p>
-          </div>
-          <h1>Inventory control.</h1>
-          <p class="context-intro">Catalog, movement, and reporting records for authorized staff.</p>
-
-          <dl class="module-list">
-            <div>
-              <dt>01 / Catalog</dt>
-              <dd>Items, units, and thresholds</dd>
-            </div>
-            <div>
-              <dt>02 / Movement</dt>
-              <dd>Stock in, sales, and adjustments</dd>
-            </div>
-            <div>
-              <dt>03 / Reporting</dt>
-              <dd>Performance and stock velocity</dd>
-            </div>
-          </dl>
-
-          <div class="context-footer">
-            <span>Access level</span>
-            <strong>Authorized staff only</strong>
-          </div>
-        </aside>
-
         <section class="access-panel" aria-labelledby="sign-in-title">
           <div class="panel-header">
-            <p>ACCESS / 01</p>
-            <h2 id="sign-in-title">Sign in</h2>
-            <span>Enter your staff account details to continue.</span>
+            <span class="product-symbol" aria-hidden="true">
+              <mat-icon>inventory_2</mat-icon>
+            </span>
+            <h1 id="sign-in-title">Sign in to Inventory</h1>
+            <span>Use your staff account to continue.</span>
           </div>
 
           @if (!mfaRequired()) {
@@ -121,7 +83,7 @@ import { AuthService } from '../../core/auth.service';
             </form>
           }
 
-          <p class="access-note">Restricted access. Activity is recorded against your account.</p>
+          <p class="access-note">Activity is recorded against your account.</p>
         </section>
       </section>
     </main>
@@ -136,238 +98,85 @@ import { AuthService } from '../../core/auth.service';
       .access-page {
         display: grid;
         min-height: 100dvh;
-        grid-template-rows: auto 1fr;
+        place-items: center;
+        padding: 24px;
         background: var(--canvas);
       }
 
-      .access-bar {
-        display: flex;
-        width: min(100% - 48px, 1240px);
-        min-height: 78px;
-        margin: 0 auto;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid var(--line-strong);
+      .access-content {
+        width: 100%;
+        max-width: 400px;
       }
 
-      .product-mark {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--ink-strong);
-        text-decoration: none;
+      .access-panel {
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-md);
+      }
+
+      .panel-header {
+        margin-bottom: 24px;
       }
 
       .product-symbol {
         display: grid;
-        width: 34px;
-        height: 34px;
+        width: 40px;
+        height: 40px;
+        margin-bottom: 18px;
         place-items: center;
-        background: var(--ink-strong);
-        color: var(--marker);
-        font-family: var(--font-mono);
-        font-size: 0.7rem;
-        font-weight: 500;
-      }
-
-      .product-copy {
-        display: grid;
-        gap: 1px;
-      }
-
-      .product-copy strong {
-        font-size: 0.91rem;
-        font-weight: 700;
-        line-height: 1.2;
-      }
-
-      .product-copy small {
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.64rem;
-        line-height: 1.2;
-      }
-
-      .access-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.66rem;
-      }
-
-      .access-status > span {
-        width: 7px;
-        height: 7px;
+        border-radius: 10px;
         background: var(--brand);
+        color: #ffffff;
       }
 
-      .access-content {
-        display: grid;
-        width: min(100% - 48px, 1040px);
-        margin: auto;
-        grid-template-columns: minmax(0, 1.04fr) minmax(340px, 0.76fr);
-        gap: 24px;
-        padding: 48px 0;
+      .product-symbol mat-icon {
+        width: 22px;
+        height: 22px;
+        color: #ffffff;
+        font-size: 22px;
       }
 
-      .access-context {
-        display: flex;
-        min-height: 510px;
-        flex-direction: column;
-        padding: 32px;
-        border-top: 5px solid var(--marker);
-        background: var(--rail);
-        color: var(--rail-text);
-      }
-
-      .context-heading {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .context-index {
-        display: grid;
-        width: 27px;
-        height: 27px;
-        place-items: center;
-        border: 1px solid #647269;
-        color: var(--marker);
-        font-family: var(--font-mono);
-        font-size: 0.68rem;
-      }
-
-      .context-heading p {
-        margin: 0;
-        color: var(--rail-muted);
-        font-family: var(--font-mono);
-        font-size: 0.68rem;
-      }
-
-      .access-context h1 {
-        margin: 54px 0 0;
-        color: var(--rail-text);
-        font-size: clamp(2rem, 3vw, 2.8rem);
-        font-weight: 700;
-        line-height: 1.04;
-        letter-spacing: 0;
-      }
-
-      .context-intro {
-        max-width: 400px;
-        margin: 16px 0 0;
-        color: #c7d0c7;
-        font-size: 0.9rem;
-        line-height: 1.65;
-      }
-
-      .module-list {
-        display: grid;
-        gap: 0;
-        margin: 42px 0 0;
-        border-top: 1px solid #4c574d;
-      }
-
-      .module-list div {
-        display: grid;
-        grid-template-columns: 145px 1fr;
-        gap: 14px;
-        padding: 12px 0;
-        border-bottom: 1px solid #4c574d;
-      }
-
-      .module-list dt {
-        color: var(--marker);
-        font-family: var(--font-mono);
-        font-size: 0.66rem;
-      }
-
-      .module-list dd {
-        margin: 0;
-        color: #d5ddd6;
-        font-size: 0.77rem;
-        line-height: 1.35;
-      }
-
-      .context-footer {
-        display: grid;
-        gap: 4px;
-        margin-top: auto;
-        padding-top: 24px;
-      }
-
-      .context-footer span {
-        color: var(--rail-muted);
-        font-family: var(--font-mono);
-        font-size: 0.65rem;
-      }
-
-      .context-footer strong {
-        color: var(--rail-text);
-        font-size: 0.79rem;
-        font-weight: 600;
-      }
-
-      .access-panel {
-        align-self: center;
-        padding: 34px;
-        border: 1px solid var(--line-strong);
-        border-top: 5px solid var(--brand);
-        background: var(--surface);
-      }
-
-      .panel-header p {
-        margin: 0 0 14px;
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.68rem;
-      }
-
-      .panel-header h2 {
+      .panel-header h1 {
         margin: 0;
         color: var(--ink-strong);
-        font-size: 1.65rem;
-        font-weight: 700;
-        line-height: 1.1;
-        letter-spacing: 0;
+        font-size: 1.375rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
       }
 
       .panel-header > span {
         display: block;
-        margin: 8px 0 28px;
+        margin-top: 6px;
         color: var(--muted);
-        font-size: 0.85rem;
-        line-height: 1.5;
+        font-size: 0.875rem;
       }
 
       form {
         display: grid;
-        gap: 12px;
+        gap: 4px;
       }
 
-      mat-form-field {
+      form button[mat-flat-button] {
         width: 100%;
-      }
-
-      form button {
-        width: 100%;
-        min-height: 44px;
-        margin-top: 6px;
+        min-height: 42px;
+        margin-top: 8px;
       }
 
       .form-error {
         display: flex;
-        align-items: center;
-        gap: 7px;
-        margin: 0;
-        padding: 10px;
-        border-left: 3px solid var(--rose);
-        background: var(--rose-soft);
-        color: #9f3d31;
-        font-size: 0.8rem;
-        line-height: 1.4;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 0 0 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--danger-line);
+        border-radius: var(--radius);
+        background: var(--danger-soft);
+        color: var(--danger);
+        font-size: 0.8125rem;
+        line-height: 1.45;
       }
 
       .form-error mat-icon {
@@ -379,91 +188,47 @@ import { AuthService } from '../../core/auth.service';
 
       .mfa-hint {
         display: flex;
-        align-items: center;
-        gap: 7px;
-        margin: 0;
-        color: var(--ink-soft, #4a5450);
-        font-size: 0.82rem;
-        line-height: 1.4;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 0 0 16px;
+        padding: 10px 12px;
+        border: 1px solid var(--info-line);
+        border-radius: var(--radius);
+        background: var(--info-soft);
+        color: var(--info);
+        font-size: 0.8125rem;
+        line-height: 1.45;
       }
 
       .mfa-hint mat-icon {
-        width: 18px;
-        height: 18px;
+        width: 17px;
+        height: 17px;
         flex: 0 0 auto;
-        font-size: 18px;
+        font-size: 17px;
       }
 
       .mfa-cancel {
         width: 100%;
-        margin-top: 2px;
+        margin-top: 4px;
+        color: var(--muted);
       }
 
       .access-note {
-        margin: 24px 0 0;
-        padding-top: 14px;
+        margin: 20px 0 0;
+        padding-top: 18px;
         border-top: 1px solid var(--line);
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.65rem;
-        line-height: 1.5;
+        color: var(--subtle);
+        font-size: 0.8125rem;
+        text-align: center;
       }
 
-      @media (max-width: 800px) {
-        .access-content {
-          grid-template-columns: 1fr;
-          padding: 28px 0 40px;
-        }
-
-        .access-context {
-          min-height: auto;
-          padding: 24px;
-        }
-
-        .access-context h1 {
-          margin-top: 32px;
-          font-size: 2rem;
-        }
-
-        .module-list {
-          margin-top: 30px;
-        }
-
-        .context-footer {
-          display: none;
+      @media (max-width: 480px) {
+        .access-page {
+          padding: 16px;
         }
 
         .access-panel {
-          width: min(100%, 480px);
-          justify-self: center;
-        }
-      }
-
-      @media (max-width: 520px) {
-        .access-bar,
-        .access-content {
-          width: min(100% - 32px, 1040px);
-        }
-
-        .access-bar {
-          min-height: 66px;
-        }
-
-        .access-status {
-          display: none;
-        }
-
-        .access-context {
-          padding: 20px;
-        }
-
-        .module-list div {
-          grid-template-columns: 1fr;
-          gap: 5px;
-        }
-
-        .access-panel {
-          padding: 26px 20px;
+          padding: 24px 20px;
         }
       }
     `,
