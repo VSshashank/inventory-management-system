@@ -16,7 +16,6 @@ import type { InventoryTransaction } from '../../core/models';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">MOVEMENT HISTORY</p>
           <h1>Transactions</h1>
           <p class="muted">Stock movement audit trail</p>
         </div>
@@ -62,17 +61,17 @@ import type { InventoryTransaction } from '../../core/models';
       align-items: center;
       min-width: 82px;
       justify-content: center;
-      padding: 5px 8px;
+      padding: 4px 10px;
       border-radius: 999px;
       background: var(--surface-strong);
       color: var(--muted);
-      font-size: .72rem;
-      font-weight: 800;
-      line-height: 1;
+      font-size: .75rem;
+      font-weight: 500;
+      line-height: 1.35;
     }
-    .transaction-type.stock-in { background: var(--brand-soft); color: var(--brand-strong); }
-    .transaction-type.sale { background: #e5f0f8; color: #35677e; }
-    .transaction-type.adjustment { background: var(--amber-soft); color: #8a5c00; }
+    .transaction-type.stock-in { background: var(--ok-soft); color: var(--ok); }
+    .transaction-type.sale { background: var(--info-soft); color: var(--info); }
+    .transaction-type.adjustment { background: var(--warn-soft); color: var(--warn); }
   `],
 })
 export class TransactionsListComponent {

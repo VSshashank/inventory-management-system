@@ -27,7 +27,6 @@ import type { User } from '../../core/models';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">TEAM ACCESS</p>
           <h1>Users</h1>
           <p class="muted">Admin-only staff management and account status</p>
         </div>
@@ -116,21 +115,31 @@ import type { User } from '../../core/models';
       }
 
       .user-form button {
-        height: 56px;
+        height: 48px;
       }
 
       button mat-icon {
         margin-right: 8px;
       }
 
+      /* A default-density form field is taller than a table row, so the
+         select was spilling over the row boundary. */
       .role-field {
-        width: 140px;
-        margin-top: 10px;
-        margin-bottom: -18px;
+        width: 132px;
+        margin: 0;
       }
 
-      .status-pill {
-        min-width: 72px;
+      .role-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
+
+      .role-field ::ng-deep .mat-mdc-text-field-wrapper {
+        height: 38px;
+      }
+
+      .role-field ::ng-deep .mat-mdc-form-field-infix {
+        min-height: 38px;
+        padding: 7px 0;
       }
 
       .actions {

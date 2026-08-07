@@ -36,7 +36,6 @@ import { TransactionDraftService } from './transaction-draft.service';
     <section class="page">
       <header class="page-header">
         <div>
-          <p class="page-kicker">STOCK MOVEMENT</p>
           <h1>New Transaction</h1>
           <p class="muted">Record stock-in, sale, adjustment, or backdated history</p>
         </div>
@@ -123,7 +122,7 @@ import { TransactionDraftService } from './transaction-draft.service';
         <mat-step>
           <ng-template matStepLabel>Confirm</ng-template>
           <section class="summary">
-            <div><span>Type</span><strong>{{ typeForm.controls.type.value }}</strong></div>
+            <div><span>Type</span><strong>{{ typeLabel() }}</strong></div>
             <div><span>Item</span><strong>{{ selectedItem()?.name }}</strong></div>
             <div><span>Quantity</span><strong>{{ detailsForm.controls.quantity.value }}</strong></div>
             <div><span>Date</span><strong>{{ detailsForm.controls.transactionDate.value | date }}</strong></div>
@@ -147,35 +146,39 @@ import { TransactionDraftService } from './transaction-draft.service';
     .stepper {
       max-width: 980px;
       padding: 8px 0 22px;
+      background: var(--surface) !important;
     }
+    /* Selectable cards rather than one boxed row: the chosen type reads from
+       its border and tint, so no decorative colour stripe is needed. */
     .type-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0;
+      gap: 12px;
       margin: 20px 0 26px;
-      border: 1px solid var(--line-strong);
     }
     .type-option {
       display: flex;
-      min-height: 72px;
+      min-height: 64px;
       align-items: center;
-      padding: 0 14px;
-      border: 0;
-      border-left: 1px solid var(--line);
-      border-radius: 0;
+      padding: 0 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
       background: var(--surface);
-      color: var(--ink-strong);
-      font-size: 0.88rem;
-      font-weight: 700;
+      color: var(--ink);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: border-color 120ms ease, background 120ms ease;
     }
-    .type-option:first-child { border-left: 0; }
     .type-option:hover {
+      border-color: var(--subtle);
       background: var(--surface-soft);
     }
-    .type-option:has(input:checked) { background: var(--surface-strong); }
-    .type-option.stock-in { border-top: 3px solid var(--brand); }
-    .type-option.sale { border-top: 3px solid #5a8eaa; }
-    .type-option.adjustment { border-top: 3px solid var(--amber); }
+    .type-option:has(input:checked) {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+      color: var(--brand-deep);
+      font-weight: 600;
+    }
     .details-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -215,14 +218,11 @@ import { TransactionDraftService } from './transaction-draft.service';
       margin-bottom: 5px;
       color: var(--muted);
       font-size: .73rem;
-      font-weight: 700;
+      font-weight: 600;
     }
     .summary strong { color: var(--ink-strong); font-size: .88rem; }
     @media (max-width: 720px) {
       .type-grid, .details-grid, .summary { grid-template-columns: 1fr; }
-      .type-option,
-      .type-option:first-child { border-top: 1px solid var(--line); border-left: 0; }
-      .type-option:first-child { border-top: 0; }
       .summary div,
       .summary div:nth-child(odd),
       .summary div:nth-child(-n + 2) { border-top: 1px solid var(--line); border-left: 0; }
@@ -276,6 +276,22 @@ export class TransactionFormComponent {
   }
 
   readonly displayItem = (item: Item | string | null): string => typeof item === 'string' ? item : item ? `${item.sku} · ${item.name}` : '';
+
+  /**
+   * The confirm step reads back the label the user picked rather than the raw
+   * enum the API stores. A getter, not a computed — the source is a
+   * FormControl, which a computed would not track.
+   */
+  typeLabel(): string {
+    switch (this.typeForm.controls.type.value) {
+      case 'STOCK_IN':
+        return 'Stock in';
+      case 'SALE':
+        return 'Sale';
+      default:
+        return 'Adjustment';
+    }
+  }
 
   selectItem(item: Item): void {
     this.selectedItem.set(item);
